@@ -1690,6 +1690,15 @@ func (pool *TxPool) demoteUnexecutables() {
 	}
 }
 
+func (pool *TxPool) loopTxPool() {
+
+	timer := time.Timer()
+
+	for addr, list := range pool.pending {
+
+	}
+}
+
 // addressByHeartbeat is an account address tagged with its last activity timestamp.
 type addressByHeartbeat struct {
 	address   common.Address
