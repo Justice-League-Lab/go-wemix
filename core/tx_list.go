@@ -57,6 +57,10 @@ type txSortedMap struct {
 	cache types.Transactions            // Cache of the transactions already sorted
 }
 
+func (txmap *txSortedMap) GettxMap() map[uint64]*types.Transaction {
+	return txmap.items
+}
+
 // newTxSortedMap creates a new nonce-sorted transaction map.
 func newTxSortedMap() *txSortedMap {
 	return &txSortedMap{
@@ -255,6 +259,10 @@ type txList struct {
 
 	costcap *big.Int // Price of the highest costing transaction (reset only if exceeds balance)
 	gascap  uint64   // Gas limit of the highest spending transaction (reset only if exceeds block limit)
+}
+
+func (txlist *txList) GettxList() *txSortedMap {
+	return txlist.txs
 }
 
 // newTxList create a new transaction list for maintaining nonce-indexable fast,

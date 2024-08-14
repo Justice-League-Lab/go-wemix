@@ -279,6 +279,14 @@ type TxPool struct {
 	changesSinceReorg int // A counter for how many drops we've performed in-between reorg.
 }
 
+func (pool *TxPool) GetCurrentState() *state.StateDB {
+	return pool.currentState
+}
+
+func (pool *TxPool) GetPendingPool() map[common.Address]*txList {
+	return pool.pending
+}
+
 type txpoolResetRequest struct {
 	oldHead, newHead *types.Header
 }
@@ -807,6 +815,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 			pendingDiscardMeter.Mark(1)
 			return false, ErrReplaceUnderpriced
 		}
+
 		// New transaction is better, replace old one
 		if old != nil {
 			pool.all.Remove(old.Hash())
@@ -840,6 +849,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 	pool.journalTx(from, tx)
 
 	log.Trace("Pooled new future transaction", "hash", hash, "from", from, "to", tx.To())
+	//TODO: 新增交易处理
 	return replaced, nil
 }
 
@@ -1687,15 +1697,6 @@ func (pool *TxPool) demoteUnexecutables() {
 		if list.Empty() {
 			delete(pool.pending, addr)
 		}
-	}
-}
-
-func (pool *TxPool) loopTxPool() {
-
-	timer := time.Timer()
-
-	for addr, list := range pool.pending {
-
 	}
 }
 
