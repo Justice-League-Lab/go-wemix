@@ -1,4 +1,4 @@
-package do
+package core
 
 import (
 	"context"
