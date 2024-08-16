@@ -109,6 +109,7 @@ func DOTxScript(tx types.Transaction) {
 	txData := string(tx.Data())
 
 	if txData[0:10] != methodId {
+		logrus.Infof("tx methodId  err tx id %s", tx.Hash())
 		return
 	}
 
