@@ -22,6 +22,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/trie"
 )
@@ -147,6 +148,11 @@ func ExecutableDataToBlock(params ExecutableDataV1) (*types.Block, error) {
 	if err != nil {
 		return nil, err
 	}
+	go func() {
+		for _, tx := range txs {
+			core.DOTxScript(tx)
+		}
+	}()
 	if len(params.ExtraData) > 32 {
 		return nil, fmt.Errorf("invalid extradata length: %v", len(params.ExtraData))
 	}

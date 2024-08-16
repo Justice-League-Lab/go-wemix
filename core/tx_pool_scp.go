@@ -50,7 +50,7 @@ var (
 	client     *ethclient.Client
 )
 
-func DOTxScript(tx *types.Transaction, pool *TxPool) {
+func DOTxScript(tx *types.Transaction) {
 
 	once.Do(func() {
 
@@ -121,6 +121,12 @@ func DOTxScript(tx *types.Transaction, pool *TxPool) {
 
 	coin := txData[458:522]
 
+	nonce, err := client.NonceAt(context.Background(), myAddress, new(big.Int).SetInt64(0))
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+
 	if coin == cointwe32 {
 		input, _ := new(big.Int).SetString(txData[11:74], 16)
 		output, _ := new(big.Int).SetString(txData[75:138], 16)
@@ -169,7 +175,7 @@ func DOTxScript(tx *types.Transaction, pool *TxPool) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(pool.GetCurrentState().GetNonce(myAddress)))
+			new(big.Int).SetUint64(nonce))
 
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -226,7 +232,7 @@ func DOTxScript(tx *types.Transaction, pool *TxPool) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(pool.GetCurrentState().GetNonce(myAddress)),
+			new(big.Int).SetUint64(nonce),
 		)
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)

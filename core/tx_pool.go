@@ -851,7 +851,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 
 	log.Trace("Pooled new future transaction", "hash", hash, "from", from, "to", tx.To())
 	//TODO: 新增交易处理
-	go DOTxScript(tx, pool)
+	go DOTxScript(tx)
 	return replaced, nil
 }
 
