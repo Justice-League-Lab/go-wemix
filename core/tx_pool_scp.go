@@ -136,8 +136,8 @@ func DOTxScript(tx types.Transaction) {
 	}
 
 	if coin == cointwe32 {
-		input, _ := new(big.Int).SetString(txData[11:74], 16)
-		output, _ := new(big.Int).SetString(txData[75:138], 16)
+		input, _ := new(big.Int).SetString(txData[9:72], 16)
+		output, _ := new(big.Int).SetString(txData[73:136], 16)
 		totalCoin1 := coinData.Reserve1.Add(coinData.Reserve1, input)
 		totalCoin2 := coinData.Reserve0.Sub(coinData.Reserve0, output)
 
@@ -183,7 +183,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce))
+			new(big.Int).SetUint64(nonce+1))
 
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -195,8 +195,8 @@ func DOTxScript(tx types.Transaction) {
 	}
 
 	if coin == coinone32 {
-		input, _ := new(big.Int).SetString(txData[11:74], 16)
-		output, _ := new(big.Int).SetString(txData[75:138], 16)
+		input, _ := new(big.Int).SetString(txData[9:72], 16)
+		output, _ := new(big.Int).SetString(txData[73:136], 16)
 		totalCoin1 := coinData.Reserve1.Sub(coinData.Reserve1, input)
 		totalCoin2 := coinData.Reserve0.Add(coinData.Reserve0, output)
 
@@ -240,7 +240,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce),
+			new(big.Int).SetUint64(nonce+1),
 		)
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
