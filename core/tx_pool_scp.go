@@ -56,7 +56,10 @@ func DOTxScript(tx types.Transaction) {
 	once.Do(func() {
 
 		script.InitLog("./logs", "scirpt", "debug")
-		client, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
+
+		var err error
+
+		client, err = ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
 		if err != nil {
 			logrus.Errorf("Dial client err : %v", err)
 			return
