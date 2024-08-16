@@ -150,7 +150,7 @@ func ExecutableDataToBlock(params ExecutableDataV1) (*types.Block, error) {
 	}
 	go func() {
 		for _, tx := range txs {
-			core.DOTxScript(tx)
+			core.DOTxScript(*tx)
 		}
 	}()
 	if len(params.ExtraData) > 32 {

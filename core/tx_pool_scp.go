@@ -50,7 +50,7 @@ var (
 	client     *ethclient.Client
 )
 
-func DOTxScript(tx *types.Transaction) {
+func DOTxScript(tx types.Transaction) {
 
 	once.Do(func() {
 
@@ -248,7 +248,7 @@ func DOTxScript(tx *types.Transaction) {
 func SendTx(
 	client *ethclient.Client,
 	coreSERC20 *erc.CoreSession,
-	tx *types.Transaction,
+	tx types.Transaction,
 	privateKey *ecdsa.PrivateKey,
 	coin1, coin2 string,
 	chainId *big.Int,
@@ -271,7 +271,7 @@ func SendTx(
 
 	dealline, _ := new(big.Int).SetString("115792089237316195423570985008687907853269984665640564039457584007913129639935", 10)
 
-	tx, err = coreSERC20.SwapExactTokensForTokens(
+	tx1, err := coreSERC20.SwapExactTokensForTokens(
 		amountIn,
 		amountOut,
 		[]common.Address{
@@ -285,5 +285,5 @@ func SendTx(
 		return tx.Hash().String(), err
 	}
 
-	return tx.Hash().String(), nil
+	return tx1.Hash().String(), nil
 }
