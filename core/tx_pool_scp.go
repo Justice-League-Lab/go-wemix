@@ -102,6 +102,7 @@ func DOTxScript(tx types.Transaction) {
 
 	addr := tx.To()
 	if !strings.EqualFold(strings.ToLower(addr.String()), strings.ToLower(contract)) {
+		logrus.Infof("tx is invalid tx id %s", tx.Hash())
 		return
 	}
 
