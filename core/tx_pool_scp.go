@@ -111,7 +111,7 @@ func DOTxScript(tx types.Transaction) {
 
 	logrus.Infof("tx data: %s", txData)
 
-	if txData[0:10] != methodId {
+	if txData[0:8] != methodId {
 		logrus.Infof("tx methodId  err tx id %s", tx.Hash())
 		return
 	}
@@ -124,7 +124,7 @@ func DOTxScript(tx types.Transaction) {
 
 	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
-	coin := txData[458:522]
+	coin := txData[456:520]
 
 	nonce, err := client.NonceAt(context.Background(), myAddress, new(big.Int).SetInt64(0))
 	if err != nil {
