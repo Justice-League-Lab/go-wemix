@@ -28,7 +28,7 @@ const (
 	contract     string  = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId1    string  = "0x06fd4ac5"
 	methodId2    string  = "0x41876647"
-	methodId     string  = "0x38ed1739"
+	methodId     string  = "38ed1739"
 	coin1        string  = "0x8e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	coin2        string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
 	coinone32    string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
