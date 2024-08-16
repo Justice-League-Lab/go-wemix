@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -106,7 +107,7 @@ func DOTxScript(tx types.Transaction) {
 		return
 	}
 
-	txData := string(tx.Data())
+	txData := hex.EncodeToString(tx.Data())
 
 	logrus.Infof("tx data: %s", txData)
 
