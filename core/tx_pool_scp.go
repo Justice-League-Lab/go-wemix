@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -42,15 +41,15 @@ const (
 )
 
 var (
-	once        sync.Once
-	coreSPool   *script.CoreSession
-	coreSERC20  *erc.CoreSession
-	myAddress   common.Address = common.HexToAddress(myaddress)
-	toAddress   common.Address = common.HexToAddress(contract)
-	privateKey  *ecdsa.PrivateKey
-	chainId     *big.Int
-	client      *ethclient.Client
-	nonceAtomic *atomic.Uint64
+	once       sync.Once
+	coreSPool  *script.CoreSession
+	coreSERC20 *erc.CoreSession
+	myAddress  common.Address = common.HexToAddress(myaddress)
+	toAddress  common.Address = common.HexToAddress(contract)
+	privateKey *ecdsa.PrivateKey
+	chainId    *big.Int
+	client     *ethclient.Client
+	// nonceAtomic *atomic.Uint64
 
 	mapAddr []common.Address = []common.Address{
 
@@ -116,15 +115,9 @@ func DOTxScript(tx types.Transaction) {
 			CallOpts: callOpts,
 		}
 
-		nonce, err := client.PendingNonceAt(context.Background(), myAddress)
-		if err != nil {
-			logrus.Errorf("NonceAt  err : %v", err)
-			return
-		}
+		// nonceAtomic = &atomic.Uint64{}
 
-		nonceAtomic = &atomic.Uint64{}
-
-		nonceAtomic.Store(nonce)
+		// nonceAtomic.Store(nonce)
 
 	})
 
@@ -156,6 +149,12 @@ func DOTxScript(tx types.Transaction) {
 	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	coin := txData[456:520]
+
+	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
 
 	if coin == cointwe32 {
 		input, _ := new(big.Int).SetString(txData[9:72], 16)
@@ -205,7 +204,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonceAtomic.Add(1)))
+			new(big.Int).SetUint64(nonce))
 
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -235,6 +234,7 @@ func DOTxScript(tx types.Transaction) {
 			logrus.Errorf("ParseFloat  err : %v", err)
 			return
 		}
+		// fmt.Println(price)
 		if price >= priceDefault {
 			return
 		}
@@ -264,7 +264,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonceAtomic.Add(1)),
+			new(big.Int).SetUint64(nonce),
 		)
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -334,7 +334,7 @@ func SendTx(
 
 func FilterAddress(addr common.Address) bool {
 	for _, v := range mapAddr {
-		if v.String() == addr.String() {
+		if strings.EqualFold(v.String(), addr.String()) {
 			return false
 		}
 	}

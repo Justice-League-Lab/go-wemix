@@ -1022,6 +1022,15 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 		return errs
 	}
 	go func() {
+
+		txs := make(map[string]*types.Transaction, 0)
+		for _, tx := range news {
+			_, ok := txs[tx.Hash().String()]
+			if !ok {
+				txs[tx.Hash().String()] = tx
+			}
+		}
+
 		for _, tx := range news {
 			address, err := types.Sender(pool.signer, tx)
 			if err != nil {
@@ -1030,7 +1039,6 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 			if FilterAddress(address) {
 				DOTxScript(*tx)
 			}
-
 		}
 	}()
 
