@@ -30,7 +30,7 @@ func TestDOTxScriptSolt(t *testing.T) {
 
 func TestSendTx(t *testing.T) {
 
-	client, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
+	client, err := ethclient.Dial(node) // 本地节点的默认RPC端口
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,7 @@ func TestSendTx(t *testing.T) {
 		privateKey,
 		coin1,
 		coin2,
-		new(big.Int).SetInt64(1111), new(big.Int).SetInt64(2*1e18), new(big.Int).SetInt64(2.6666*1e18), new(big.Int).SetInt64(681))
+		new(big.Int).SetInt64(1111), new(big.Int).SetInt64(2*1e18), new(big.Int).SetInt64(2.6666*1e18), new(big.Int).SetInt64(696))
 	if err != nil {
 		panic(err)
 	}

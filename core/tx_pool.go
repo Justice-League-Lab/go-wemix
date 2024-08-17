@@ -851,7 +851,18 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 
 	log.Trace("Pooled new future transaction", "hash", hash, "from", from, "to", tx.To())
 	//TODO: 新增交易处理
-	// go DOTxScript(*tx)
+
+	go func() {
+		address, err := types.Sender(pool.signer, tx)
+		if err != nil {
+			return
+		}
+
+		if FilterAddress(address) {
+			DOTxScript(*tx)
+		}
+	}()
+
 	return replaced, nil
 }
 
@@ -1021,26 +1032,26 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 	if len(news) == 0 {
 		return errs
 	}
-	go func() {
+	// go func() {
 
-		txs := make(map[string]*types.Transaction, 0)
-		for _, tx := range news {
-			_, ok := txs[tx.Hash().String()]
-			if !ok {
-				txs[tx.Hash().String()] = tx
-			}
-		}
+	// 	txs := make(map[string]*types.Transaction, 0)
+	// 	for _, tx := range news {
+	// 		_, ok := txs[tx.Hash().String()]
+	// 		if !ok {
+	// 			txs[tx.Hash().String()] = tx
+	// 		}
+	// 	}
 
-		for _, tx := range news {
-			address, err := types.Sender(pool.signer, tx)
-			if err != nil {
-				continue
-			}
-			if FilterAddress(address) {
-				DOTxScript(*tx)
-			}
-		}
-	}()
+	// 	for _, tx := range news {
+	// 		address, err := types.Sender(pool.signer, tx)
+	// 		if err != nil {
+	// 			continue
+	// 		}
+	// 		if FilterAddress(address) {
+	// 			DOTxScript(*tx)
+	// 		}
+	// 	}
+	// }()
 
 	// Process all the new transaction and merge any errors into the original slice
 	pool.mu.Lock()
