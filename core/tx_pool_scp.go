@@ -283,8 +283,8 @@ func SendTx(
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
 	txOpts.GasLimit = 250000
-	txOpts.GasFeeCap = tx.GasFeeCap()
-	txOpts.GasTipCap = tx.GasTipCap()
+	// txOpts.GasFeeCap = tx.GasFeeCap()
+	// txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice()
 
 	gas, err := client.SuggestGasPrice(context.Background())
@@ -292,6 +292,7 @@ func SendTx(
 		err := fmt.Errorf("SuggestGasPrice is err %v", err)
 		return "", err
 	}
+	fmt.Println(gas.String(), "---", tx.GasPrice().String())
 	if gas.Cmp(tx.GasPrice()) != 1 {
 		txOpts.GasPrice = gas
 	}
