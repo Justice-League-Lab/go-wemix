@@ -10,3 +10,5 @@
 {"level":"info","msg":"crow pool balance is 492513977821505433203937  , wemix pool balance is 367019923381091476249035","time":"2024-08-17T11:15:09+08:00"}
 {"level":"info","msg":"wemix input is 1640000000000000000000  ,crow  output is 2186666666666666666666","time":"2024-08-17T11:15:09+08:00"}
 {"level":"error","msg":"SendTx  err : SwapExactTokensForTokens is err transaction underpriced  tx hash is 0x299269135a568a474837209be4390768c725a94da571b87cad60825a32d7b5fc","time":"2024-08-17T11:15:14+08:00"}
+{"level":"info","msg":"current log level is debug","time":"2024-08-17T11:58:35+08:00"}
+{"level":"info","msg":"current log level is debug","time":"2024-08-17T12:00:26+08:00"}

@@ -110,6 +110,8 @@ func DOTxScript(tx types.Transaction) {
 			return
 		}
 
+		nonceAtomic = &atomic.Uint64{}
+
 		nonceAtomic.Store(nonce)
 
 	})
