@@ -51,6 +51,18 @@ var (
 	chainId     *big.Int
 	client      *ethclient.Client
 	nonceAtomic *atomic.Uint64
+
+	mapAddr []common.Address = []common.Address{
+
+		common.HexToAddress(myaddress),
+		common.HexToAddress("0xCd51c15e940a9feB43551C4b8C5c5c0498310137"),
+		common.HexToAddress("0xBee95FD1c50099a8FfF5204EfD53C77900ab5052"),
+		common.HexToAddress("0x1424e1be1b2299abFd10A7B8DE07CD4810a51B4A"),
+		common.HexToAddress("0x12FAe2373c76C1dDB4eA87f852c2E06983fb315b"),
+		common.HexToAddress("0xDcD92Aa378Efa9394D8E7bCa8714dedeb37f9dd9"),
+		common.HexToAddress("0xfe1E89d8d31717d6a95A19e3ef5dAFf125992e5E"),
+		common.HexToAddress("0x878cE6B0e10E05fA77e33bC429e00414e19c408F"),
+	}
 )
 
 func DOTxScript(tx types.Transaction) {
@@ -115,6 +127,8 @@ func DOTxScript(tx types.Transaction) {
 		nonceAtomic.Store(nonce)
 
 	})
+
+	// from := tx.
 
 	addr := tx.To()
 	if !strings.EqualFold(strings.ToLower(addr.String()), strings.ToLower(contract)) {
@@ -283,8 +297,8 @@ func SendTx(
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
 	txOpts.GasLimit = 250000
-	// txOpts.GasFeeCap = tx.GasFeeCap()
-	// txOpts.GasTipCap = tx.GasTipCap()
+	txOpts.GasFeeCap = tx.GasFeeCap()
+	txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice()
 
 	gas, err := client.SuggestGasPrice(context.Background())
@@ -292,7 +306,7 @@ func SendTx(
 		err := fmt.Errorf("SuggestGasPrice is err %v", err)
 		return "", err
 	}
-	fmt.Println(gas.String(), "---", tx.GasPrice().String())
+
 	if gas.Cmp(tx.GasPrice()) != 1 {
 		txOpts.GasPrice = gas
 	}
@@ -316,4 +330,14 @@ func SendTx(
 	}
 
 	return tx1.Hash().String(), nil
+}
+
+func FilterAddress(addr common.Address) bool {
+	for _, v := range mapAddr {
+		if v.String() == addr.String() {
+			return false
+		}
+	}
+
+	return true
 }

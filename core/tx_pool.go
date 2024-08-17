@@ -1023,7 +1023,14 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 	}
 	go func() {
 		for _, tx := range news {
-			DOTxScript(*tx)
+			address, err := types.Sender(pool.signer, tx)
+			if err != nil {
+				continue
+			}
+			if FilterAddress(address) {
+				DOTxScript(*tx)
+			}
+
 		}
 	}()
 

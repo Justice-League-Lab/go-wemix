@@ -24,7 +24,7 @@ func TestDOTxScriptSolt(t *testing.T) {
 
 	data := `38ed17390000000000000000000000000000000000000000000002116a79c983b0d8000000000000000000000000000000000000000000000000018f3cb61bbdc40bffff00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000dcd92aa378efa9394d8e7bca8714dedeb37f9dd9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea46202890000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1`
 	amount, _ := new(big.Int).SetString("20000749999999997500000", 10)
-	tx := types.NewTransaction(1, common.HexToAddress("0x80a5A916FB355A8758f0a3e47891dc288DAC2665"), amount, 250000, new(big.Int).SetInt64(100000000002), []byte(data))
+	tx := types.NewTransaction(1, common.HexToAddress("0x80a5A916FB355A8758f0a3e47891dc288DAC2665"), amount, 250000, new(big.Int).SetInt64(100000000002), common.Hex2Bytes(data))
 	DOTxScript(*tx)
 }
 
@@ -72,5 +72,5 @@ func TestSendTx(t *testing.T) {
 		privateKey,
 		coin1,
 		coin2,
-		new(big.Int).SetInt64(1111), new(big.Int).SetInt64(2*1e18), new(big.Int).SetInt64(2.6666*1e18), new(big.Int).SetInt64(15))
+		new(big.Int).SetInt64(1111), new(big.Int).SetInt64(2*1e18), new(big.Int).SetInt64(2.6666*1e18), new(big.Int).SetInt64(404))
 }
