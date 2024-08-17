@@ -112,6 +112,8 @@ func DOTxScript(tx types.Transaction) {
 
 	txData := hex.EncodeToString(tx.Data())
 
+	// txData := string(tx.Data())
+
 	logrus.Infof("tx data: %s", txData)
 
 	if txData[0:8] != methodId {
@@ -129,7 +131,7 @@ func DOTxScript(tx types.Transaction) {
 
 	coin := txData[456:520]
 
-	nonce, err := client.NonceAt(context.Background(), myAddress, new(big.Int).SetInt64(0))
+	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
@@ -183,7 +185,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce+1))
+			new(big.Int).SetUint64(nonce))
 
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -210,7 +212,8 @@ func DOTxScript(tx types.Transaction) {
 
 		price, err := strconv.ParseFloat(decimalPos, 64)
 		if err != nil {
-			panic(err)
+			logrus.Errorf("ParseFloat  err : %v", err)
+			return
 		}
 		if price >= priceDefault {
 			return
@@ -222,7 +225,8 @@ func DOTxScript(tx types.Transaction) {
 
 		priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
 		if err != nil {
-			panic(err)
+			logrus.Errorf("ParseFloat  err : %v", err)
+			return
 		}
 
 		amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((priceDefault/priceCalc - 1) * 200000))), big.NewInt(1e18))
@@ -240,7 +244,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce+1),
+			new(big.Int).SetUint64(nonce),
 		)
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
