@@ -25,7 +25,7 @@ const (
 	poolID       string  = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node         string  = "127.0.0.1:8545"
 	nodeWebSite  string  = "https://api.wemix.com"
-	myaddress    string  = "0xE8DB41c5e9ef0f09a1e65f8dC8e9fEF1879250A9"
+	myaddress    string  = "0x3a3b580ac38ae2b937eb2d8848dec11fda317f82"
 	contract     string  = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId1    string  = "0x06fd4ac5"
 	methodId2    string  = "0x41876647"
@@ -36,7 +36,7 @@ const (
 	cointwe32    string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
 	priceDefault float64 = 0.75
 
-	prikey string = "4e041f6f473bb6250db7688e2fba855b787708448840f271abadb3214944fec4"
+	prikey string = "0d858bc2319b164afdadc5e28d8e5ccbffc028d149a60b0ec678439fb975ef5f"
 
 	MaxGas int64 = 38694000460
 )
