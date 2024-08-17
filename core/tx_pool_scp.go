@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -41,14 +42,15 @@ const (
 )
 
 var (
-	once       sync.Once
-	coreSPool  *script.CoreSession
-	coreSERC20 *erc.CoreSession
-	myAddress  common.Address = common.HexToAddress(myaddress)
-	toAddress  common.Address = common.HexToAddress(contract)
-	privateKey *ecdsa.PrivateKey
-	chainId    *big.Int
-	client     *ethclient.Client
+	once        sync.Once
+	coreSPool   *script.CoreSession
+	coreSERC20  *erc.CoreSession
+	myAddress   common.Address = common.HexToAddress(myaddress)
+	toAddress   common.Address = common.HexToAddress(contract)
+	privateKey  *ecdsa.PrivateKey
+	chainId     *big.Int
+	client      *ethclient.Client
+	nonceAtomic *atomic.Uint64
 )
 
 func DOTxScript(tx types.Transaction) {
@@ -102,6 +104,14 @@ func DOTxScript(tx types.Transaction) {
 			CallOpts: callOpts,
 		}
 
+		nonce, err := client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
+
+		nonceAtomic.Store(nonce)
+
 	})
 
 	addr := tx.To()
@@ -130,12 +140,6 @@ func DOTxScript(tx types.Transaction) {
 	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	coin := txData[456:520]
-
-	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
-	if err != nil {
-		logrus.Errorf("NonceAt  err : %v", err)
-		return
-	}
 
 	if coin == cointwe32 {
 		input, _ := new(big.Int).SetString(txData[9:72], 16)
@@ -185,7 +189,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce))
+			new(big.Int).SetUint64(nonceAtomic.Add(1)))
 
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -244,7 +248,7 @@ func DOTxScript(tx types.Transaction) {
 			chainId,
 			amountIn,
 			amountOut,
-			new(big.Int).SetUint64(nonce),
+			new(big.Int).SetUint64(nonceAtomic.Add(1)),
 		)
 		if err != nil {
 			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
@@ -276,8 +280,19 @@ func SendTx(
 
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
-	txOpts.GasLimit = 3000000
+	txOpts.GasLimit = 250000
+	txOpts.GasFeeCap = tx.GasFeeCap()
+	txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice()
+
+	gas, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		err := fmt.Errorf("SuggestGasPrice is err %v", err)
+		return "", err
+	}
+	if gas.Cmp(tx.GasPrice()) != 1 {
+		txOpts.GasPrice = gas
+	}
 
 	coreSERC20.TransactOpts = *txOpts
 
