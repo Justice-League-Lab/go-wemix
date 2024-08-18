@@ -22,17 +22,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type OptType uint8
+
 const (
-	poolID       string  = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
-	node         string  = "http://127.0.0.1:8588"
-	nodeWebSite  string  = "wss://ws.wemix.com"
-	myaddress    string  = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
-	contract     string  = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
-	methodId1    string  = "0x06fd4ac5"
-	methodId2    string  = "0x41876647"
-	methodId     string  = "38ed1739"
+	BuyType OptType = iota
+	SellType
+)
+
+const (
+	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
+	node        string = "http://127.0.0.1:8588"
+	nodeWebSite string = "wss://ws.wemix.com"
+	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
+	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
+	methodId    string = "38ed1739"
+	methodId1   string = "06fd4ac5"
+	methodId2   string = "41876647"
+	methodId3   string = "09c5eabe"
+	methodId4   string = "d97495c9"
+	methodId5   string = "592db2b9"
+	methodId6   string = "baa2abd"
+
 	coin1        string  = "0x8e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	coin2        string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
+	coinCmpSell  string  = `000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea46202890000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1`
+	coinCmpBuy   string  = `0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289`
 	coinone32    string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	cointwe32    string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
 	priceDefault float64 = 0.745
@@ -54,6 +68,16 @@ var (
 	amountMin     *big.Int
 	prikey        string
 	// nonceAtomic *atomic.Uint64
+
+	methodIdList []string = []string{
+		methodId,
+		methodId1,
+		methodId2,
+		methodId3,
+		methodId4,
+		methodId5,
+		methodId6,
+	}
 
 	mapAddr []common.Address = []common.Address{
 
@@ -170,9 +194,13 @@ func DOTxScript(tx types.Transaction) {
 
 	logrus.Infof("tx data: %s", txData)
 
-	if txData[0:8] != methodId {
-		logrus.Infof("tx methodId  err tx id %s", tx.Hash())
-		return
+	for i, v := range methodIdList {
+		if txData[0:8] == v {
+			break
+		}
+		if i == len(methodIdList)-1 {
+			return
+		}
 	}
 
 	coinData, err := coreSPool.GetReserves()
@@ -180,162 +208,21 @@ func DOTxScript(tx types.Transaction) {
 		logrus.Errorf("GetReserves  err : %v", err)
 		return
 	}
-
-	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
-
-	coin := txData[456:520]
-
 	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
+	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
-	if coin == cointwe32 {
-		input, _ := new(big.Int).SetString(txData[9:72], 16)
-		output, _ := new(big.Int).SetString(txData[73:136], 16)
-		totalCoin1 := coinData.Reserve1.Add(coinData.Reserve1, input)
-		totalCoin2 := coinData.Reserve0.Sub(coinData.Reserve0, output)
-
-		ratA := new(big.Rat).SetInt(totalCoin1)
-		ratB := new(big.Rat).SetInt(totalCoin2)
-
-		result := new(big.Rat).Quo(ratA, ratB)
-
-		// 获取结果字符串并格式化
-		decimalPos := result.FloatString(3)
-
-		price, err := strconv.ParseFloat(decimalPos, 64)
-		if err != nil {
-			logrus.Errorf("ParseFloat  err : %v", err)
-			return
-		}
-		if price <= priceDefault {
-			return
-		}
-
-		//TODO：send tx
-
-		decimalPos2 := result.FloatString(5)
-
-		priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
-		if err != nil {
-			logrus.Errorf("ParseFloat  err : %v", err)
-			return
-		}
-
-		amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((priceCalc/priceDefault - 1) * 200000))), big.NewInt(1e18))
-		if amountMin.Cmp(amountIn) == 1 {
-			logrus.Infof("amout not less than 200   tx hash is %v", tx.Hash().String())
-			return
-		}
-		balance, err := coin2Contract.BalanceOf(myAddress)
-		if err != nil {
-			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-			return
-		}
-
-		if balance.Cmp(amountIn) < 1 {
-			amountIn = balance
-		}
-
-		amountOut := new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(75)), big.NewInt(100))
-
-		logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
-
-		txHash, err := SendTx(
-			client,
-			coreSERC20,
-			tx,
-			privateKey,
-			coin2,
-			coin1,
-			chainId,
-			amountIn,
-			amountOut,
-			new(big.Int).SetUint64(nonce))
-
-		if err != nil {
-			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
-			return
-		}
-
-		logrus.Infof(" tx succuess hash is %v", txHash)
-
-	}
-
-	if coin == coinone32 {
-		input, _ := new(big.Int).SetString(txData[9:72], 16)
-		output, _ := new(big.Int).SetString(txData[73:136], 16)
-		totalCoin1 := coinData.Reserve1.Sub(coinData.Reserve1, input)
-		totalCoin2 := coinData.Reserve0.Add(coinData.Reserve0, output)
-
-		ratA := new(big.Rat).SetInt(totalCoin1)
-		ratB := new(big.Rat).SetInt(totalCoin2)
-
-		result := new(big.Rat).Quo(ratA, ratB)
-
-		// 获取结果字符串并格式化
-		decimalPos := result.FloatString(3)
-
-		price, err := strconv.ParseFloat(decimalPos, 64)
-		if err != nil {
-			logrus.Errorf("ParseFloat  err : %v", err)
-			return
-		}
-
-		if price >= priceDefault {
-			return
-		}
-
-		//TODO：send tx
-
-		decimalPos2 := result.FloatString(5)
-
-		priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
-		if err != nil {
-			logrus.Errorf("ParseFloat  err : %v", err)
-			return
-		}
-
-		amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((priceDefault/priceCalc - 1) * 200000))), big.NewInt(1e18))
-		if amountMin.Cmp(amountIn) == 1 {
-			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
-			return
-		}
-		balance, err := coin1Contract.BalanceOf(myAddress)
-		if err != nil {
-			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-			return
-		}
-
-		if balance.Cmp(amountIn) < 1 {
-			amountIn = balance
-		}
-
-		amountOut := new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100)), big.NewInt(75))
-
-		logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
-
-		txHash, err := SendTx(
-			client,
-			coreSERC20,
-			tx,
-			privateKey,
-			coin1,
-			coin2,
-			chainId,
-			amountIn,
-			amountOut,
-			new(big.Int).SetUint64(nonce),
-		)
-		if err != nil {
-			logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
-			return
-		}
-
-		logrus.Infof(" tx succuess hash is %v", txHash)
-
+	{
+		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
 	}
 
 }
@@ -403,4 +290,421 @@ func FilterAddress(addr common.Address) bool {
 	}
 
 	return true
+}
+
+func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptType) (*big.Int, *big.Int) {
+
+	amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
+	if amountMin.Cmp(amountIn) == 1 {
+		logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+		return nil, nil
+	}
+	balance := new(big.Int)
+	if optType == BuyType {
+		var err error
+		balance, err = coin1Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			return nil, nil
+		}
+	}
+
+	if optType == SellType {
+		var err error
+		balance, err = coin2Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			return nil, nil
+		}
+	}
+
+	if balance.Cmp(amountIn) < 1 {
+		amountIn = balance
+	}
+	amountOut := new(big.Int)
+
+	if optType == BuyType {
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100)), big.NewInt(75))
+	}
+
+	if optType == SellType {
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(75)), big.NewInt(100))
+	}
+
+	return amountIn, amountOut
+
+}
+
+func dealWithcoinprice(totalCoin1, totalCoin2 *big.Int) (*big.Rat, bool) {
+
+	ratA := new(big.Rat).SetInt(totalCoin1)
+	ratB := new(big.Rat).SetInt(totalCoin2)
+
+	result := new(big.Rat).Quo(ratA, ratB)
+
+	// 获取结果字符串并格式化
+	decimalPos := result.FloatString(3)
+
+	price, err := strconv.ParseFloat(decimalPos, 64)
+	if err != nil {
+		logrus.Errorf("ParseFloat  err : %v", err)
+		return result, false
+	}
+
+	return result, price == priceDefault
+}
+
+func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId1 {
+		return
+	}
+	input, _ := new(big.Int).SetString(txData[9:72], 16)
+	output := new(big.Int).Div(new(big.Int).Mul(input, new(big.Int).SetInt64(100)), new(big.Int).SetInt64(75))
+
+	totalCoin1 := new(big.Int).Add(reserve1, input)
+	totalCoin2 := new(big.Int).Sub(reserve0, output)
+
+	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
+
+	if ok {
+		return
+	}
+
+	decimalPos2 := result.FloatString(5)
+
+	priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
+	if err != nil {
+		logrus.Errorf("ParseFloat  err : %v", err)
+		return
+	}
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefault, tx, SellType)
+
+	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+
+	txHash, err := SendTx(
+		client,
+		coreSERC20,
+		tx,
+		privateKey,
+		coin2,
+		coin1,
+		chainId,
+		amountIn,
+		amountOut,
+		new(big.Int).SetUint64(nonce),
+	)
+	if err != nil {
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		return
+	}
+
+	logrus.Infof(" tx succuess hash is %v", txHash)
+
+}
+
+func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId2 {
+		return
+	}
+	var v1, v2 string
+	var optType OptType
+
+	v1 = txData[9:72]
+	v2 = txData[73:136]
+
+	if strings.Contains(txData, coinCmpBuy) {
+		optType = BuyType
+	}
+	if strings.Contains(txData, coinCmpSell) {
+		optType = SellType
+	}
+	if optType == BuyType {
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+	if optType == SellType {
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+}
+
+func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId {
+		return
+	}
+	var v1, v2 string
+	var optType OptType
+
+	v1 = txData[9:72]
+	v2 = txData[73:136]
+
+	if strings.Contains(txData, coinCmpBuy) {
+		optType = BuyType
+	}
+	if strings.Contains(txData, coinCmpSell) {
+		optType = SellType
+	}
+	if optType == BuyType {
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+	if optType == SellType {
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+}
+
+func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId3 {
+		return
+	}
+	var v1, v2 string
+	var optType OptType
+	if len(txData) == 2056 {
+		v1 = txData[657 : 657+63]
+		v2 = txData[721 : 721+63]
+	}
+
+	if len(txData) == 2186 {
+		v1 = txData[1745 : 1745+63]
+		v2 = txData[1809 : 1809+63]
+	}
+
+	if len(txData) == 1994 {
+		v1 = txData[657 : 657+63]
+		v2 = txData[721 : 721+63]
+	}
+
+	if len(txData) == 2442 {
+		v1 = txData[657 : 657+63]
+		v2 = txData[721 : 721+63]
+	}
+
+	if len(txData) == 2122 {
+		v1 = txData[1681 : 1681+63]
+		v2 = txData[1745 : 1745+63]
+	}
+
+	if len(txData) == 2570 {
+		v1 = txData[1681 : 1681+63]
+		v2 = txData[1745 : 1745+63]
+	}
+	if strings.Contains(txData, coinCmpBuy) {
+		optType = BuyType
+	}
+	if strings.Contains(txData, coinCmpSell) {
+		optType = SellType
+	}
+	if optType == BuyType {
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+	if optType == SellType {
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+}
+
+func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId4 {
+		return
+	}
+	var v1, v2 string
+	var optType OptType
+
+	if len(txData) == 1418 {
+		v1 = txData[713 : 713+63]
+		v2 = txData[777 : 777+63]
+	}
+
+	if len(txData) == 1354 {
+		v1 = txData[713 : 713+63]
+		v2 = txData[777 : 777+63]
+	}
+
+	if strings.Contains(txData, coinCmpBuy) {
+		optType = BuyType
+	}
+	if strings.Contains(txData, coinCmpSell) {
+		optType = SellType
+	}
+	if optType == BuyType {
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+	if optType == SellType {
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+}
+
+func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId5 {
+		return
+	}
+	var v1, v2 string
+	var optType OptType
+
+	if len(txData) == 1418 {
+		v1 = txData[713 : 713+63]
+		v2 = txData[777 : 777+63]
+	}
+
+	if len(txData) == 1354 {
+		v1 = txData[713 : 713+63]
+		v2 = txData[777 : 777+63]
+	}
+
+	if strings.Contains(txData, coinCmpBuy) {
+		optType = BuyType
+	}
+	if strings.Contains(txData, coinCmpSell) {
+		optType = SellType
+	}
+	if optType == BuyType {
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+
+	if optType == SellType {
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+	}
+}
+
+func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	if txData[:8] != methodId6 {
+		return
+	}
+	input, _ := new(big.Int).SetString(txData[137:137+63], 16)
+	output := new(big.Int).Div(new(big.Int).Mul(input, new(big.Int).SetInt64(75)), new(big.Int).SetInt64(100))
+	totalCoin1 := reserve1.Sub(reserve1, input)
+	totalCoin2 := reserve1.Add(reserve0, output)
+
+	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
+
+	if ok {
+		return
+	}
+
+	//TODO：send tx
+
+	decimalPos2 := result.FloatString(5)
+
+	priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
+	if err != nil {
+		logrus.Errorf("ParseFloat  err : %v", err)
+		return
+	}
+
+	amountIn, amountOut := dealwithAmout(priceDefault, priceCalc, tx, BuyType)
+
+	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+
+	txHash, err := SendTx(
+		client,
+		coreSERC20,
+		tx,
+		privateKey,
+		coin1,
+		coin2,
+		chainId,
+		amountIn,
+		amountOut,
+		new(big.Int).SetUint64(nonce),
+	)
+	if err != nil {
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		return
+	}
+
+	logrus.Infof(" tx succuess hash is %v", txHash)
+}
+
+func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	input, _ := new(big.Int).SetString(v1, 16)
+	output, _ := new(big.Int).SetString(v2, 16)
+	totalCoin1 := reserve1.Sub(reserve1, input)
+	totalCoin2 := reserve1.Add(reserve0, output)
+
+	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
+
+	if ok {
+		return
+	}
+
+	//TODO：send tx
+
+	decimalPos2 := result.FloatString(5)
+
+	priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
+	if err != nil {
+		logrus.Errorf("ParseFloat  err : %v", err)
+		return
+	}
+
+	amountIn, amountOut := dealwithAmout(priceDefault, priceCalc, tx, BuyType)
+
+	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+
+	txHash, err := SendTx(
+		client,
+		coreSERC20,
+		tx,
+		privateKey,
+		coin1,
+		coin2,
+		chainId,
+		amountIn,
+		amountOut,
+		new(big.Int).SetUint64(nonce),
+	)
+	if err != nil {
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		return
+	}
+
+	logrus.Infof(" tx succuess hash is %v", txHash)
+}
+
+func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+	input, _ := new(big.Int).SetString(v1, 16)
+	output, _ := new(big.Int).SetString(v2, 16)
+	totalCoin1 := new(big.Int).Add(reserve1, input)
+	totalCoin2 := new(big.Int).Sub(reserve0, output)
+
+	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
+
+	if ok {
+		return
+	}
+
+	//TODO：send tx
+
+	decimalPos2 := result.FloatString(5)
+
+	priceCalc, err := strconv.ParseFloat(decimalPos2, 64)
+	if err != nil {
+		logrus.Errorf("ParseFloat  err : %v", err)
+		return
+	}
+
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefault, tx, SellType)
+
+	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+
+	txHash, err := SendTx(
+		client,
+		coreSERC20,
+		tx,
+		privateKey,
+		coin2,
+		coin1,
+		chainId,
+		amountIn,
+		amountOut,
+		new(big.Int).SetUint64(nonce))
+
+	if err != nil {
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		return
+	}
+
+	logrus.Infof(" tx succuess hash is %v", txHash)
 }
