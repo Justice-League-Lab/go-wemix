@@ -460,35 +460,30 @@ func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	}
 	var v1, v2 string
 	var optType OptType
-	if len(txData) == 2056 {
+
+	switch len(txData) {
+	case 2056:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	}
-
-	if len(txData) == 2186 {
+	case 2186:
 		v1 = txData[1745 : 1745+63]
 		v2 = txData[1809 : 1809+63]
-	}
-
-	if len(txData) == 1994 {
+	case 1994:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	}
-
-	if len(txData) == 2442 {
+	case 2442:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	}
-
-	if len(txData) == 2122 {
+	case 2122:
 		v1 = txData[1681 : 1681+63]
 		v2 = txData[1745 : 1745+63]
-	}
-
-	if len(txData) == 2570 {
+	case 2570:
 		v1 = txData[1681 : 1681+63]
 		v2 = txData[1745 : 1745+63]
+	default:
+		return
 	}
+
 	if strings.Contains(txData, coinCmpBuy) {
 		optType = BuyType
 	}
