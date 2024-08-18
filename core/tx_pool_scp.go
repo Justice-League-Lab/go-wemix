@@ -78,14 +78,14 @@ func DOTxScript(tx types.Transaction) {
 
 		var err error
 
-		err = config.ResolveConfig("script/config/config.yaml", cfg)
+		err = config.ResolveConfig("../config.yaml", cfg)
 		if err != nil {
 			logrus.Errorf("ResolveConfig err : %v", err)
 			return
 		}
 		prikey = cfg.PrivateKey
 
-		client, err = ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
+		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
 		if err != nil {
 			logrus.Errorf("Dial client err : %v", err)
 			return
