@@ -13,6 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/script"
+	"github.com/ethereum/go-ethereum/core/script/coin"
+	"github.com/ethereum/go-ethereum/core/script/config"
 	"github.com/ethereum/go-ethereum/core/script/erc"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,7 +26,7 @@ const (
 	poolID       string  = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node         string  = "http://127.0.0.1:8588"
 	nodeWebSite  string  = "wss://ws.wemix.com"
-	myaddress    string  = "0xe8db41c5e9ef0f09a1e65f8dc8e9fef1879250a9"
+	myaddress    string  = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract     string  = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId1    string  = "0x06fd4ac5"
 	methodId2    string  = "0x41876647"
@@ -33,22 +35,24 @@ const (
 	coin2        string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
 	coinone32    string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	cointwe32    string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
-	priceDefault float64 = 0.75
-
-	prikey string = "4e041f6f473bb6250db7688e2fba855b787708448840f271abadb3214944fec4"
+	priceDefault float64 = 0.745
 
 	MaxGas int64 = 38694000460
 )
 
 var (
-	once       sync.Once
-	coreSPool  *script.CoreSession
-	coreSERC20 *erc.CoreSession
-	myAddress  common.Address = common.HexToAddress(myaddress)
-	toAddress  common.Address = common.HexToAddress(contract)
-	privateKey *ecdsa.PrivateKey
-	chainId    *big.Int
-	client     *ethclient.Client
+	once          sync.Once
+	coreSPool     *script.CoreSession
+	coreSERC20    *erc.CoreSession
+	coin1Contract *coin.CoinSession
+	coin2Contract *coin.SciptSession
+	myAddress     common.Address = common.HexToAddress(myaddress)
+	toAddress     common.Address = common.HexToAddress(contract)
+	privateKey    *ecdsa.PrivateKey
+	chainId       *big.Int
+	client        *ethclient.Client
+	amountMin     *big.Int
+	prikey        string
 	// nonceAtomic *atomic.Uint64
 
 	mapAddr []common.Address = []common.Address{
@@ -70,9 +74,18 @@ func DOTxScript(tx types.Transaction) {
 
 		script.InitLog("./logs", "scirpt", "debug")
 
+		cfg := &config.Config{}
+
 		var err error
 
-		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
+		err = config.ResolveConfig("script/config/config.yaml", cfg)
+		if err != nil {
+			logrus.Errorf("ResolveConfig err : %v", err)
+			return
+		}
+		prikey = cfg.PrivateKey
+
+		client, err = ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
 		if err != nil {
 			logrus.Errorf("Dial client err : %v", err)
 			return
@@ -85,6 +98,7 @@ func DOTxScript(tx types.Transaction) {
 		}
 
 		chainId = new(big.Int).SetInt64(1111)
+		amountMin = new(big.Int).Mul(new(big.Int).SetInt64(200), big.NewInt(1e18))
 
 		core, err := script.NewCore(common.HexToAddress(poolID), client)
 
@@ -104,6 +118,28 @@ func DOTxScript(tx types.Transaction) {
 			CallOpts: callOpts,
 		}
 
+		coin1C, err := coin.NewCoin(common.HexToAddress(coin1), client)
+
+		if err != nil {
+			logrus.Errorf(" coin1C NewCore  err : %v", err)
+			return
+		}
+		coin1Contract = &coin.CoinSession{
+			Contract: coin1C,
+			CallOpts: callOpts,
+		}
+
+		coin2C, err := coin.NewScipt(common.HexToAddress(coin2), client)
+
+		if err != nil {
+			logrus.Errorf(" coin2C NewCore  err : %v", err)
+			return
+		}
+		coin2Contract = &coin.SciptSession{
+			Contract: coin2C,
+			CallOpts: callOpts,
+		}
+
 		coreERC20, err := erc.NewCore(toAddress, client)
 
 		if err != nil {
@@ -120,7 +156,6 @@ func DOTxScript(tx types.Transaction) {
 		// nonceAtomic.Store(nonce)
 
 	})
-
 	// from := tx.
 
 	addr := tx.To()
@@ -168,7 +203,7 @@ func DOTxScript(tx types.Transaction) {
 		result := new(big.Rat).Quo(ratA, ratB)
 
 		// 获取结果字符串并格式化
-		decimalPos := result.FloatString(2)
+		decimalPos := result.FloatString(3)
 
 		price, err := strconv.ParseFloat(decimalPos, 64)
 		if err != nil {
@@ -190,6 +225,20 @@ func DOTxScript(tx types.Transaction) {
 		}
 
 		amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((priceCalc/priceDefault - 1) * 200000))), big.NewInt(1e18))
+		if amountMin.Cmp(amountIn) == 1 {
+			logrus.Infof("amout not less than 200   tx hash is %v", tx.Hash().String())
+			return
+		}
+		balance, err := coin2Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			return
+		}
+
+		if balance.Cmp(amountIn) < 1 {
+			amountIn = balance
+		}
+
 		amountOut := new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(75)), big.NewInt(100))
 
 		logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
@@ -227,14 +276,14 @@ func DOTxScript(tx types.Transaction) {
 		result := new(big.Rat).Quo(ratA, ratB)
 
 		// 获取结果字符串并格式化
-		decimalPos := result.FloatString(2)
+		decimalPos := result.FloatString(3)
 
 		price, err := strconv.ParseFloat(decimalPos, 64)
 		if err != nil {
 			logrus.Errorf("ParseFloat  err : %v", err)
 			return
 		}
-		// fmt.Println(price)
+
 		if price >= priceDefault {
 			return
 		}
@@ -250,6 +299,20 @@ func DOTxScript(tx types.Transaction) {
 		}
 
 		amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((priceDefault/priceCalc - 1) * 200000))), big.NewInt(1e18))
+		if amountMin.Cmp(amountIn) == 1 {
+			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			return
+		}
+		balance, err := coin1Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			return
+		}
+
+		if balance.Cmp(amountIn) < 1 {
+			amountIn = balance
+		}
+
 		amountOut := new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100)), big.NewInt(75))
 
 		logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
