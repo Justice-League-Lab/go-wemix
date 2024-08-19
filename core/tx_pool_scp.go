@@ -25,7 +25,7 @@ import (
 type OptType uint8
 
 const (
-	BuyType OptType = iota
+	BuyType OptType = iota + 1
 	SellType
 )
 
