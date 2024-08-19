@@ -103,7 +103,7 @@ func DOTxScript(tx types.Transaction) {
 
 		var err error
 
-		err = config.ResolveConfig("/opt/gwemix/bin//config.yaml", cfg)
+		err = config.ResolveConfig("/opt/gwemix/bin/config.yaml", cfg)
 		if err != nil {
 			logrus.Errorf("ResolveConfig err : %v", err)
 			return
