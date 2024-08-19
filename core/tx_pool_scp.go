@@ -43,13 +43,14 @@ const (
 	methodId5   string = "592db2b9"
 	methodId6   string = "baa2abd"
 
-	coin1        string  = "0x8e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
-	coin2        string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
-	coinCmpSell  string  = `000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea46202890000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1`
-	coinCmpBuy   string  = `0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289`
-	coinone32    string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
-	cointwe32    string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
-	priceDefault float64 = 0.745
+	coin1           string  = "0x8e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
+	coin2           string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
+	coinCmpSell     string  = `000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea46202890000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1`
+	coinCmpBuy      string  = `0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289`
+	coinone32       string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
+	cointwe32       string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
+	priceDefaultDel float64 = 0.745
+	priceDefaultAdd float64 = 0.75
 
 	MaxGas int64 = 38694000460
 )
@@ -356,7 +357,11 @@ func dealWithcoinprice(totalCoin1, totalCoin2 *big.Int) (*big.Rat, bool) {
 		return result, false
 	}
 
-	return result, price == priceDefault
+	if price > priceDefaultAdd || price < priceDefaultDel {
+		return result, true
+	}
+
+	return result, false
 }
 
 func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
