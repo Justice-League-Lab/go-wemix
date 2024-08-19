@@ -295,10 +295,7 @@ func FilterAddress(addr common.Address) bool {
 func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptType) (*big.Int, *big.Int) {
 
 	amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
-	if amountMin.Cmp(amountIn) == 1 {
-		logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
-		return nil, nil
-	}
+
 	balance := new(big.Int)
 	if optType == BuyType {
 		var err error
@@ -310,6 +307,10 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	}
 
 	if optType == SellType {
+		if amountMin.Cmp(amountIn) == 1 {
+			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			return nil, nil
+		}
 		var err error
 		balance, err = coin2Contract.BalanceOf(myAddress)
 		if err != nil {
@@ -325,6 +326,10 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 
 	if optType == BuyType {
 		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100)), big.NewInt(75))
+		if amountMin.Cmp(amountOut) == 1 {
+			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			return nil, nil
+		}
 	}
 
 	if optType == SellType {
@@ -617,8 +622,8 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
 	input, _ := new(big.Int).SetString(v1, 16)
 	output, _ := new(big.Int).SetString(v2, 16)
-	totalCoin1 := reserve1.Sub(reserve1, input)
-	totalCoin2 := reserve1.Add(reserve0, output)
+	totalCoin1 := new(big.Int).Sub(reserve1, input)
+	totalCoin2 := new(big.Int).Add(reserve0, output)
 
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
