@@ -103,7 +103,7 @@ func DOTxScript(tx types.Transaction) {
 
 		var err error
 
-		err = config.ResolveConfig("/opt/gwemix/bin/config.yaml", cfg)
+		err = config.ResolveConfig("/opt/gwemix/bin//config.yaml", cfg)
 		if err != nil {
 			logrus.Errorf("ResolveConfig err : %v", err)
 			return
@@ -295,21 +295,11 @@ func FilterAddress(addr common.Address) bool {
 
 func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptType) (*big.Int, *big.Int) {
 
-	amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
-
-	fmt.Println(amountIn, "---")
-
 	balance := new(big.Int)
-	if optType == BuyType {
-		var err error
-		balance, err = coin1Contract.BalanceOf(myAddress)
-		if err != nil {
-			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-			return nil, nil
-		}
-	}
-
+	amountIn := new(big.Int)
+	amountOut := new(big.Int)
 	if optType == SellType {
+		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
 		if amountMin.Cmp(amountIn) == 1 {
 			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 			return nil, nil
@@ -317,26 +307,37 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		var err error
 		balance, err = coin2Contract.BalanceOf(myAddress)
 		if err != nil {
-			logrus.Infof("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
 			return nil, nil
 		}
-	}
+		if balance.Cmp(amountIn) < 1 {
+			amountIn = balance
+		}
 
-	if balance.Cmp(amountIn) < 1 {
-		amountIn = balance
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(74812)), big.NewInt(100000))
+
 	}
-	amountOut := new(big.Int)
 
 	if optType == BuyType {
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(133)), big.NewInt(100))
+		amountOut = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
+
 		if amountMin.Cmp(amountOut) == 1 {
 			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 			return nil, nil
 		}
-	}
+		amountIn = new(big.Int).Div(new(big.Int).Mul(amountOut, big.NewInt(74812)), big.NewInt(100000))
+		var err error
+		balance, err = coin1Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+			return nil, nil
+		}
+		if balance.Cmp(amountIn) < 1 {
+			amountIn = balance
+		}
 
-	if optType == SellType {
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(74812)), big.NewInt(100000))
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100000)), big.NewInt(74812))
+
 	}
 
 	return amountIn, amountOut
@@ -389,7 +390,7 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		logrus.Errorf("ParseFloat  err : %v", err)
 		return
 	}
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultDel, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultAdd, tx, SellType)
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
@@ -602,7 +603,7 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultAdd, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 
@@ -648,7 +649,7 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultAdd, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 
 	if amountIn == nil || amountOut == nil {
 		return
@@ -698,7 +699,8 @@ func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *b
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultDel, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultAdd, tx, SellType)
+
 	if amountIn == nil || amountOut == nil {
 		return
 	}
