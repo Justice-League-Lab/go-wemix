@@ -387,7 +387,7 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		logrus.Errorf("ParseFloat  err : %v", err)
 		return
 	}
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefault, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultDel, tx, SellType)
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
@@ -600,7 +600,7 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefault, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultAdd, priceCalc, tx, BuyType)
 
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 
@@ -646,7 +646,7 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefault, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultAdd, priceCalc, tx, BuyType)
 
 	if amountIn == nil || amountOut == nil {
 		return
@@ -696,7 +696,7 @@ func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *b
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefault, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultDel, tx, SellType)
 	if amountIn == nil || amountOut == nil {
 		return
 	}
