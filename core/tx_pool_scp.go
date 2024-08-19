@@ -297,6 +297,8 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 
 	amountIn := new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
 
+	fmt.Println(amountIn, "---")
+
 	balance := new(big.Int)
 	if optType == BuyType {
 		var err error
@@ -368,15 +370,15 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	if txData[:8] != methodId1 {
 		return
 	}
-	input, _ := new(big.Int).SetString(txData[9:72], 16)
-	output := new(big.Int).Div(new(big.Int).Mul(input, new(big.Int).SetInt64(100)), new(big.Int).SetInt64(75))
+	output, _ := new(big.Int).SetString(txData[9:72], 16)
+	input := new(big.Int).Div(new(big.Int).Mul(output, new(big.Int).SetInt64(75)), new(big.Int).SetInt64(100))
 
 	totalCoin1 := new(big.Int).Add(reserve1, input)
 	totalCoin2 := new(big.Int).Sub(reserve0, output)
 
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
-	if ok {
+	if !ok {
 		return
 	}
 
@@ -586,7 +588,7 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
-	if ok {
+	if !ok {
 		return
 	}
 
@@ -632,7 +634,7 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
-	if ok {
+	if !ok {
 		return
 	}
 
@@ -682,7 +684,7 @@ func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *b
 
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
-	if ok {
+	if !ok {
 		return
 	}
 
