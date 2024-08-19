@@ -506,14 +506,15 @@ func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	var v1, v2 string
 	var optType OptType
 
-	if len(txData) == 1418 {
+	switch len(txData) {
+	case 1418:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
-	}
-
-	if len(txData) == 1354 {
+	case 1354:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
+	default:
+		return
 	}
 
 	if strings.Contains(txData, coinCmpBuy) {
@@ -538,14 +539,15 @@ func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	var v1, v2 string
 	var optType OptType
 
-	if len(txData) == 1418 {
+	switch len(txData) {
+	case 1418:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
-	}
-
-	if len(txData) == 1354 {
+	case 1354:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
+	default:
+		return
 	}
 
 	if strings.Contains(txData, coinCmpBuy) {
@@ -636,6 +638,10 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 
 	amountIn, amountOut := dealwithAmout(priceDefault, priceCalc, tx, BuyType)
 
+	if amountIn == nil || amountOut == nil {
+		return
+	}
+
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 
 	txHash, err := SendTx(
@@ -681,6 +687,9 @@ func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *b
 	}
 
 	amountIn, amountOut := dealwithAmout(priceCalc, priceDefault, tx, SellType)
+	if amountIn == nil || amountOut == nil {
+		return
+	}
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
