@@ -325,7 +325,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	amountOut := new(big.Int)
 
 	if optType == BuyType {
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100)), big.NewInt(75))
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(133)), big.NewInt(100))
 		if amountMin.Cmp(amountOut) == 1 {
 			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 			return nil, nil
@@ -333,7 +333,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	}
 
 	if optType == SellType {
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(75)), big.NewInt(100))
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(74812)), big.NewInt(100000))
 	}
 
 	return amountIn, amountOut
@@ -470,19 +470,19 @@ func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	case 2056:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	case 2186:
+	case 2184:
 		v1 = txData[1745 : 1745+63]
 		v2 = txData[1809 : 1809+63]
-	case 1994:
+	case 1992:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	case 2442:
+	case 2440:
 		v1 = txData[657 : 657+63]
 		v2 = txData[721 : 721+63]
-	case 2122:
+	case 2120:
 		v1 = txData[1681 : 1681+63]
 		v2 = txData[1745 : 1745+63]
-	case 2570:
+	case 2568:
 		v1 = txData[1681 : 1681+63]
 		v2 = txData[1745 : 1745+63]
 	default:
@@ -512,10 +512,10 @@ func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	var optType OptType
 
 	switch len(txData) {
-	case 1418:
+	case 1416:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
-	case 1354:
+	case 1352:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
 	default:
@@ -545,10 +545,10 @@ func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	var optType OptType
 
 	switch len(txData) {
-	case 1418:
+	case 1416:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
-	case 1354:
+	case 1352:
 		v1 = txData[713 : 713+63]
 		v2 = txData[777 : 777+63]
 	default:
