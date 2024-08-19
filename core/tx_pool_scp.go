@@ -41,7 +41,7 @@ const (
 	methodId3   string = "09c5eabe"
 	methodId4   string = "d97495c9"
 	methodId5   string = "592db2b9"
-	methodId6   string = "baa2abd"
+	methodId6   string = "baa2abde"
 
 	coin1           string  = "0x8e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	coin2           string  = "0x770d9d14c4ae2f78dca810958c1d9b7ea4620289"
@@ -69,6 +69,12 @@ var (
 	amountMin     *big.Int
 	prikey        string
 	// nonceAtomic *atomic.Uint64
+
+	contractList []common.Address = []common.Address{
+		common.HexToAddress(contract),
+		common.HexToAddress("0x20fdb3f41371ec0834a11dafcdb9acf5157236c4"),
+		common.HexToAddress("0x398D227685614Aaeb2e4711b048626b0551Bc0Ee"),
+	}
 
 	methodIdList []string = []string{
 		methodId,
@@ -184,9 +190,16 @@ func DOTxScript(tx types.Transaction) {
 	// from := tx.
 
 	addr := tx.To()
-	if !strings.EqualFold(strings.ToLower(addr.String()), strings.ToLower(contract)) {
-		logrus.Infof("tx is invalid tx id %s", tx.Hash())
-		return
+
+	for i, v := range contractList {
+		if strings.EqualFold(strings.ToLower(addr.String()), strings.ToLower(v.String())) {
+			break
+		}
+		if i == len(contractList)-1 {
+			logrus.Infof("tx is invalid tx id %s", tx.Hash())
+			return
+		}
+
 	}
 
 	txData := hex.EncodeToString(tx.Data())
@@ -200,6 +213,7 @@ func DOTxScript(tx types.Transaction) {
 			break
 		}
 		if i == len(methodIdList)-1 {
+			logrus.Infof("method id not find tx id %s", tx.Hash())
 			return
 		}
 	}
