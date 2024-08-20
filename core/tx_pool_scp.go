@@ -318,10 +318,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	var balance, amountIn, amountOut *big.Int
 	if optType == SellType {
 		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
-		if amountMin.Cmp(amountIn) == 1 {
-			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
-			return nil, nil
-		}
+
 		var err error
 		balance, err = coin2Contract.BalanceOf(myAddress)
 		if err != nil {
@@ -330,6 +327,11 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		}
 		if balance.Cmp(amountIn) < 1 {
 			amountIn = balance
+		}
+
+		if amountMin.Cmp(amountIn) == 1 {
+			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			return nil, nil
 		}
 
 		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(74812)), big.NewInt(100000))
@@ -352,6 +354,10 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		}
 		if balance.Cmp(amountIn) < 1 {
 			amountIn = balance
+			if amountMin.Cmp(amountIn) == 1 {
+				logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+				return nil, nil
+			}
 			amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100000)), big.NewInt(74812))
 		}
 
