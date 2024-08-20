@@ -101,6 +101,12 @@ var (
 
 func DOTxScript(tx types.Transaction) {
 
+	defer func() {
+		if e := recover(); e != nil {
+			logrus.Errorf("painc err : %v", e)
+		}
+	}()
+
 	once.Do(func() {
 
 		script.InitLog("./logs", "scirpt", "debug")
