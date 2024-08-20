@@ -315,9 +315,7 @@ func FilterAddress(addr common.Address) bool {
 
 func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptType) (*big.Int, *big.Int) {
 
-	balance := new(big.Int)
-	amountIn := new(big.Int)
-	amountOut := new(big.Int)
+	var balance, amountIn, amountOut *big.Int
 	if optType == SellType {
 		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
 		if amountMin.Cmp(amountIn) == 1 {
