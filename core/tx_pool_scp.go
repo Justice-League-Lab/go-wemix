@@ -352,9 +352,8 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		}
 		if balance.Cmp(amountIn) < 1 {
 			amountIn = balance
+			amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100000)), big.NewInt(74812))
 		}
-
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100000)), big.NewInt(74812))
 
 	}
 
