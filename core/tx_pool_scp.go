@@ -192,7 +192,7 @@ func DOTxScript(tx types.Transaction) {
 	addr := tx.To()
 
 	for i, v := range contractList {
-		if strings.EqualFold(strings.ToLower(addr.String()), strings.ToLower(v.String())) {
+		if strings.EqualFold(addr.String(), v.String()) {
 			break
 		}
 		if i == len(contractList)-1 {
