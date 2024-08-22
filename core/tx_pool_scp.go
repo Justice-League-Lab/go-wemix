@@ -339,7 +339,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	}
 
 	if optType == BuyType {
-		amountOut = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 200000))), big.NewInt(1e18))
+		amountOut = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 240000))), big.NewInt(1e18))
 
 		if amountMin.Cmp(amountOut) == 1 {
 			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
