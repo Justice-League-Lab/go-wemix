@@ -272,15 +272,15 @@ func SendTx(
 	// txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice().Sub(tx.GasPrice(), new(big.Int).SetInt64(1))
 
-	// gas, err := client.SuggestGasPrice(context.Background())
-	// if err != nil {
-	// 	err := fmt.Errorf("SuggestGasPrice is err %v", err)
-	// 	return "", err
-	// }
+	gas, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		err := fmt.Errorf("SuggestGasPrice is err %v", err)
+		return "", err
+	}
 
-	// if gas.Cmp(tx.GasPrice()) != 1 {
-	// 	txOpts.GasPrice = gas
-	// }
+	if gas.Cmp(tx.GasPrice()) != 1 {
+		txOpts.GasPrice = gas
+	}
 
 	coreSERC20.TransactOpts = *txOpts
 
