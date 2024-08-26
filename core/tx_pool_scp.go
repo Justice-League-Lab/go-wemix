@@ -267,20 +267,20 @@ func SendTx(
 
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
-	txOpts.GasLimit = 300000
-	// txOpts.GasFeeCap = tx.GasFeeCap()
-	// txOpts.GasTipCap = tx.GasTipCap()
+	txOpts.GasLimit = 330000
+	txOpts.GasFeeCap = tx.GasFeeCap()
+	txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice()
 
-	gas, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		err := fmt.Errorf("SuggestGasPrice is err %v", err)
-		return "", err
-	}
+	// gas, err := client.SuggestGasPrice(context.Background())
+	// if err != nil {
+	// 	err := fmt.Errorf("SuggestGasPrice is err %v", err)
+	// 	return "", err
+	// }
 
-	if gas.Cmp(tx.GasPrice()) != 1 {
-		txOpts.GasPrice = gas
-	}
+	// if gas.Cmp(tx.GasPrice()) != 1 {
+	// 	txOpts.GasPrice = gas
+	// }
 
 	coreSERC20.TransactOpts = *txOpts
 
