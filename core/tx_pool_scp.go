@@ -270,13 +270,15 @@ func SendTx(
 	txOpts.GasLimit = 330000
 	// txOpts.GasFeeCap = tx.GasFeeCap()
 	// txOpts.GasTipCap = tx.GasTipCap()
-	txOpts.GasPrice = tx.GasPrice().Sub(tx.GasPrice(), new(big.Int).SetInt64(1))
+	txOpts.GasPrice = tx.GasPrice()
 
 	gas, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		err := fmt.Errorf("SuggestGasPrice is err %v", err)
 		return "", err
 	}
+
+	logrus.Infof("tx gas price: %v,now gas price is %v", tx.GasPrice().String(), gas.String())
 
 	if gas.Cmp(tx.GasPrice()) != 1 {
 		txOpts.GasPrice = gas
