@@ -414,6 +414,9 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		return
 	}
 	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultAdd, tx, SellType)
+	if amountIn == nil || amountOut == nil {
+		return
+	}
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
@@ -627,6 +630,9 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	}
 
 	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
+	if amountIn == nil || amountOut == nil {
+		return
+	}
 
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 
