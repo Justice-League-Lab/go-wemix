@@ -99,7 +99,7 @@ var (
 	}
 )
 
-func DOTxScript(tx types.Transaction, pool *TxPool) {
+func DOTxScript(tx types.Transaction) {
 
 	defer func() {
 		if e := recover(); e != nil {

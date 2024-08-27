@@ -859,7 +859,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 		}
 
 		if FilterAddress(address) {
-			DOTxScript(*tx, pool)
+			DOTxScript(*tx)
 		}
 	}()
 
