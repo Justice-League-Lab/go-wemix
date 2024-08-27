@@ -32,7 +32,7 @@ const (
 const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "http://127.0.0.1:8588"
-	nodeWebSite string = "wss://ws.wemix.com"
+	nodeWebSite string = "https://api.wemix.com"
 	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
@@ -212,7 +212,7 @@ func DOTxScript(tx types.Transaction) {
 
 	// txData := string(tx.Data())
 
-	logrus.Infof("tx data: %s", txData)
+	// logrus.Infof("tx data: %s", txData)
 
 	for i, v := range methodIdList {
 		if txData[0:8] == v {
@@ -234,7 +234,7 @@ func DOTxScript(tx types.Transaction) {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-	logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
+	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
 		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
@@ -267,7 +267,7 @@ func SendTx(
 
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
-	txOpts.GasLimit = 330000
+	txOpts.GasLimit = 300000
 	// txOpts.GasFeeCap = tx.GasFeeCap()
 	// txOpts.GasTipCap = tx.GasTipCap()
 	txOpts.GasPrice = tx.GasPrice()
@@ -277,8 +277,6 @@ func SendTx(
 		err := fmt.Errorf("SuggestGasPrice is err %v", err)
 		return "", err
 	}
-
-	logrus.Infof("tx gas price: %v,now gas price is %v", tx.GasPrice().String(), gas.String())
 
 	if gas.Cmp(tx.GasPrice()) != 1 {
 		txOpts.GasPrice = gas
