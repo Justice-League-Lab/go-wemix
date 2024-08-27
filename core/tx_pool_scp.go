@@ -681,8 +681,6 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 
 	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 
-	amountIn, amountOut = new(big.Int).SetInt64(0), new(big.Int).SetInt64(0)
-
 	if amountIn == nil || amountOut == nil {
 		return
 	}
