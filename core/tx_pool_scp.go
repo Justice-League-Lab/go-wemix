@@ -32,7 +32,7 @@ const (
 const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "http://127.0.0.1:8588"
-	nodeWebSite string = "https://api.wemix.com"
+	nodeWebSite string = "wss://ws.wemix.com"
 	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
@@ -177,7 +177,13 @@ func DOTxScript(tx types.Transaction, pool *TxPool) {
 			CallOpts: callOpts,
 		}
 
-		coreERC20, err := erc.NewCore(toAddress, client)
+		client2, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
+		if err != nil {
+			logrus.Errorf("Dial client err : %v", err)
+			return
+		}
+
+		coreERC20, err := erc.NewCore(toAddress, client2)
 
 		if err != nil {
 			logrus.Errorf("erc NewCore  err : %v", err)
@@ -272,8 +278,8 @@ func SendTx(
 	txOpts.Nonce = nonce
 	txOpts.GasLimit = 330000
 
-	// txOpts.GasFeeCap = tx.GasFeeCap()
-	// txOpts.GasTipCap = tx.GasTipCap()
+	txOpts.GasFeeCap = tx.GasFeeCap()
+	txOpts.GasTipCap = tx.GasTipCap()
 	// txOpts.GasPrice = tx.GasPrice()
 
 	// gas, err := client.SuggestGasPrice(context.Background())
