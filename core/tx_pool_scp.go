@@ -271,8 +271,9 @@ func SendTx(
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
 	txOpts.GasLimit = 330000
-	txOpts.GasFeeCap = tx.GasFeeCap()
-	txOpts.GasTipCap = tx.GasTipCap()
+
+	// txOpts.GasFeeCap = tx.GasFeeCap()
+	// txOpts.GasTipCap = tx.GasTipCap()
 	// txOpts.GasPrice = tx.GasPrice()
 
 	// gas, err := client.SuggestGasPrice(context.Background())
