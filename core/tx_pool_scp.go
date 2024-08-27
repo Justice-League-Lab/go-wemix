@@ -99,7 +99,7 @@ var (
 	}
 )
 
-func DOTxScript(tx types.Transaction) {
+func DOTxScript(tx types.Transaction, pool *TxPool) {
 
 	defer func() {
 		if e := recover(); e != nil {
@@ -229,11 +229,14 @@ func DOTxScript(tx types.Transaction) {
 		logrus.Errorf("GetReserves  err : %v", err)
 		return
 	}
-	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
-	if err != nil {
-		logrus.Errorf("NonceAt  err : %v", err)
-		return
-	}
+
+	nonce := pool.GetCurrentState().GetNonce(myAddress) + 1
+
+	// nonce, err := client.PendingNonceAt(context.Background(), myAddress)
+	// if err != nil {
+	// 	logrus.Errorf("NonceAt  err : %v", err)
+	// 	return
+	// }
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
@@ -267,20 +270,20 @@ func SendTx(
 
 	txOpts.From = myAddress
 	txOpts.Nonce = nonce
-	txOpts.GasLimit = 300000
-	// txOpts.GasFeeCap = tx.GasFeeCap()
-	// txOpts.GasTipCap = tx.GasTipCap()
-	txOpts.GasPrice = tx.GasPrice()
+	txOpts.GasLimit = 330000
+	txOpts.GasFeeCap = tx.GasFeeCap()
+	txOpts.GasTipCap = tx.GasTipCap()
+	// txOpts.GasPrice = tx.GasPrice()
 
-	gas, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		err := fmt.Errorf("SuggestGasPrice is err %v", err)
-		return "", err
-	}
+	// gas, err := client.SuggestGasPrice(context.Background())
+	// if err != nil {
+	// 	err := fmt.Errorf("SuggestGasPrice is err %v", err)
+	// 	return "", err
+	// }
 
-	if gas.Cmp(tx.GasPrice()) != 1 {
-		txOpts.GasPrice = gas
-	}
+	// if gas.Cmp(tx.GasPrice()) != 1 {
+	// 	txOpts.GasPrice = gas
+	// }
 
 	coreSERC20.TransactOpts = *txOpts
 
