@@ -230,13 +230,13 @@ func DOTxScript(tx types.Transaction, pool *TxPool) {
 		return
 	}
 
-	nonce := pool.GetCurrentState().GetNonce(myAddress) + 1
+	// nonce := pool.GetCurrentState().GetNonce(myAddress) + 1
 
-	// nonce, err := client.PendingNonceAt(context.Background(), myAddress)
-	// if err != nil {
-	// 	logrus.Errorf("NonceAt  err : %v", err)
-	// 	return
-	// }
+	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
