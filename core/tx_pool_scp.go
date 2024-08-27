@@ -177,7 +177,13 @@ func DOTxScript(tx types.Transaction, pool *TxPool) {
 			CallOpts: callOpts,
 		}
 
-		coreERC20, err := erc.NewCore(toAddress, client)
+		client2, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
+		if err != nil {
+			logrus.Errorf("Dial client err : %v", err)
+			return
+		}
+
+		coreERC20, err := erc.NewCore(toAddress, client2)
 
 		if err != nil {
 			logrus.Errorf("erc NewCore  err : %v", err)
