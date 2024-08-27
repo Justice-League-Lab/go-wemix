@@ -33,7 +33,7 @@ const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "http://127.0.0.1:8588"
 	nodeWebSite string = "wss://ws.wemix.com"
-	myaddress   string = "0xe8db41c5e9ef0f09a1e65f8dc8e9fef1879250a9"
+	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
 	methodId1   string = "06fd4ac5"
