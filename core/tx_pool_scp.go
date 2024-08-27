@@ -177,13 +177,7 @@ func DOTxScript(tx types.Transaction, pool *TxPool) {
 			CallOpts: callOpts,
 		}
 
-		client2, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
-		if err != nil {
-			logrus.Errorf("Dial client err : %v", err)
-			return
-		}
-
-		coreERC20, err := erc.NewCore(toAddress, client2)
+		coreERC20, err := erc.NewCore(toAddress, client)
 
 		if err != nil {
 			logrus.Errorf("erc NewCore  err : %v", err)
@@ -235,9 +229,6 @@ func DOTxScript(tx types.Transaction, pool *TxPool) {
 		logrus.Errorf("GetReserves  err : %v", err)
 		return
 	}
-
-	// nonce := pool.GetCurrentState().GetNonce(myAddress) + 1
-
 	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
