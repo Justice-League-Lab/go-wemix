@@ -19,6 +19,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/ethclient/gethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,6 +35,7 @@ const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "http://127.0.0.1:8588"
 	nodeWebSite string = "wss://ws.wemix.com"
+	nodeHttp    string = "https://api.wemix.com"
 	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
@@ -99,7 +102,7 @@ var (
 	}
 )
 
-func DOTxScript(tx types.Transaction) {
+func DOTxScript(tx types.Transaction, optType string) {
 
 	defer func() {
 		if e := recover(); e != nil {
@@ -188,6 +191,22 @@ func DOTxScript(tx types.Transaction) {
 			CallOpts: callOpts,
 		}
 
+		backend, err := ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
+		if err != nil {
+			logrus.Errorf("Dial client err : %v", err)
+			return
+		}
+
+		rpcCli, err := rpc.Dial(nodeWebSite)
+		if err != nil {
+			logrus.Errorf("failed to dial: %v", err)
+			return
+		}
+
+		gcli := gethclient.New(rpcCli)
+
+		go DealWithTx(backend, gcli)
+
 		// nonceAtomic = &atomic.Uint64{}
 
 		// nonceAtomic.Store(nonce)
@@ -202,7 +221,7 @@ func DOTxScript(tx types.Transaction) {
 			break
 		}
 		if i == len(contractList)-1 {
-			logrus.Infof("tx is invalid tx id %s", tx.Hash())
+			logrus.Infof("tx is invalid tx id %s, type is %v", tx.Hash(), optType)
 			return
 		}
 
