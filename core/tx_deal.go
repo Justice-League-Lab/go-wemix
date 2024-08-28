@@ -131,12 +131,12 @@ func DoTxHttp(tx types.Transaction, optType string, coreSERC20Http *erc.CoreSess
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
-		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
-		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http)
+		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
+		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20Http, nil)
 	}
 }
