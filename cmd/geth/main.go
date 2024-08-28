@@ -34,7 +34,6 @@ import (
 	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/console/prompt"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -389,7 +388,7 @@ func geth(ctx *cli.Context) error {
 	defer stack.Close()
 
 	startNode(ctx, stack, backend, false)
-	go core.DealWithTx()
+	// go core.DealWithTx()
 	stack.Wait()
 	return nil
 }
