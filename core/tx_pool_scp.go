@@ -34,7 +34,7 @@ const (
 	node        string = "http://127.0.0.1:8588"
 	nodeWebSite string = "wss://ws.wemix.com"
 	nodeHttp    string = "https://api.wemix.com"
-	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
+	myaddress   string = "0x3a3b580ac38ae2b937eb2d8848dec11fda317f82"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
 	methodId1   string = "06fd4ac5"

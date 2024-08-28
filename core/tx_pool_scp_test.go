@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/sirupsen/logrus"
 )
 
 func TestDOTxScriptBuy(t *testing.T) {
@@ -30,7 +31,7 @@ func TestDOTxScriptSolt(t *testing.T) {
 
 func TestSendTx(t *testing.T) {
 
-	client, err := ethclient.Dial(node) // 本地节点的默认RPC端口
+	client, err := ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
 	if err != nil {
 		panic(err)
 	}
@@ -61,10 +62,17 @@ func TestSendTx(t *testing.T) {
 		Contract: coreERC20,
 	}
 
-	privateKey, err = crypto.HexToECDSA("4e041f6f473bb6250db7688e2fba855b787708448840f271abadb3214944fec4")
+	privateKey, err = crypto.HexToECDSA("0d858bc2319b164afdadc5e28d8e5ccbffc028d149a60b0ec678439fb975ef5f")
 	if err != nil {
 		panic(err)
 	}
+	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+	intput, _ := new(big.Int).SetString("2000000000000000000000", 10)
+	output, _ := new(big.Int).SetString("2666600000000000000000", 10)
 	hash, err := SendTx(
 		client,
 		coreSERC20,
@@ -72,7 +80,7 @@ func TestSendTx(t *testing.T) {
 		privateKey,
 		coin1,
 		coin2,
-		new(big.Int).SetInt64(1111), new(big.Int).SetInt64(2*1e18), new(big.Int).SetInt64(2.6666*1e18), new(big.Int).SetInt64(696))
+		new(big.Int).SetInt64(1111), intput, output, new(big.Int).SetUint64(nonce))
 	if err != nil {
 		panic(err)
 	}
