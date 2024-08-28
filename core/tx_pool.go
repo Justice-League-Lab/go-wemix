@@ -852,16 +852,16 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 	log.Trace("Pooled new future transaction", "hash", hash, "from", from, "to", tx.To())
 	//TODO: 新增交易处理
 
-	go func() {
-		address, err := types.Sender(pool.signer, tx)
-		if err != nil {
-			return
-		}
+	// go func() {
+	// 	address, err := types.Sender(pool.signer, tx)
+	// 	if err != nil {
+	// 		return
+	// 	}
 
-		if FilterAddress(address) {
-			DOTxScript(*tx, "local")
-		}
-	}()
+	// 	if FilterAddress(address) {
+	// 		DOTxScript(*tx, "local")
+	// 	}
+	// }()
 
 	return replaced, nil
 }

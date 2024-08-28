@@ -2,8 +2,10 @@ package core
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -33,7 +35,9 @@ func DealWithTx() {
 		logrus.Errorf("failed to SubscribePendingTransactions: %v", err)
 		return
 	}
+	// singer := types.NewEIP155Signer(chainId)
 
+	signer := types.NewLondonSigner(new(big.Int).SetInt64(1111))
 	for txhash := range txch {
 		go func(txhash common.Hash, client *ethclient.Client) {
 			tx, _, err := client.TransactionByHash(context.Background(), txhash)
@@ -41,7 +45,17 @@ func DealWithTx() {
 				logrus.Errorf("failed to TransactionByHash: %v", err)
 				return
 			}
-			DOTxScript(*tx, "http")
+
+			address, err := types.Sender(signer, tx)
+			if err != nil {
+				logrus.Errorf("failed to Sender: %v", err)
+				return
+			}
+
+			if FilterAddress(address) {
+				DOTxScript(*tx, "http")
+			}
+
 		}(txhash, backend)
 
 	}
