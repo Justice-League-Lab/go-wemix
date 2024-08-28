@@ -100,7 +100,7 @@ var (
 	}
 )
 
-func DOTxScript(tx types.Transaction, optType string) {
+func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 
 	defer func() {
 		if e := recover(); e != nil {
@@ -238,13 +238,13 @@ func DOTxScript(tx types.Transaction, optType string) {
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
-		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
-		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
 	}
 
 }
@@ -258,12 +258,13 @@ func SendTx(
 	chainId *big.Int,
 	amountIn *big.Int,
 	amountOut *big.Int,
-	nonce *big.Int) (string, error) {
+	nonce *big.Int,
+	pool *TxPool) (*types.Transaction, error) {
 
 	txOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainId)
 	if err != nil {
 		err := fmt.Errorf("NewKeyedTransactorWithChainID is err %v", err)
-		return "", err
+		return nil, err
 	}
 
 	txOpts.From = myAddress
@@ -288,7 +289,7 @@ func SendTx(
 
 	dealline, _ := new(big.Int).SetString("115792089237316195423570985008687907853269984665640564039457584007913129639935", 10)
 
-	tx1, err := coreSERC20.SwapExactTokensForTokens(
+	txNew, err := coreSERC20.SwapExactTokensForTokens(
 		amountIn,
 		amountOut,
 		[]common.Address{
@@ -299,10 +300,14 @@ func SendTx(
 		dealline)
 	if err != nil {
 		err := fmt.Errorf("SwapExactTokensForTokens is err %v", err)
-		return tx.Hash().String(), err
+		return nil, err
 	}
 
-	return tx1.Hash().String(), nil
+	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
+
+	pool.AddLocal(txNew)
+
+	return txNew, nil
 }
 
 func FilterAddress(addr common.Address) bool {
@@ -392,7 +397,14 @@ func dealWithcoinprice(totalCoin1, totalCoin2 *big.Int) (*big.Rat, bool) {
 	return result, false
 }
 
-func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0x06fd4ac5(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId1 {
 		return
 	}
@@ -422,7 +434,7 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
-	txHash, err := SendTx(
+	txNew, err := SendTx(
 		client,
 		coreSERC20,
 		tx,
@@ -433,17 +445,25 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		amountIn,
 		amountOut,
 		new(big.Int).SetUint64(nonce),
+		pool,
 	)
 	if err != nil {
-		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txNew.Hash())
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash)
+	logrus.Infof(" tx succuess hash is %v", txNew.Hash())
 
 }
 
-func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0x41876647(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId2 {
 		return
 	}
@@ -460,16 +480,23 @@ func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 }
 
-func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0x38ed1739(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId {
 		return
 	}
@@ -486,16 +513,23 @@ func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 }
 
-func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0x09c5eabe(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId3 {
 		return
 	}
@@ -532,15 +566,22 @@ func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 }
 
-func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0xd97495c9(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId4 {
 		return
 	}
@@ -565,15 +606,22 @@ func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 }
 
-func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0x592db2b9(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId5 {
 		return
 	}
@@ -598,15 +646,22 @@ func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx)
+		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
 	}
 }
 
-func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
+func Do0xbaa2abde(
+	txData string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	coreSERC20 *erc.CoreSession,
+	pool *TxPool) {
 	if txData[:8] != methodId6 {
 		return
 	}
@@ -649,16 +704,25 @@ func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 		amountIn,
 		amountOut,
 		new(big.Int).SetUint64(nonce),
+		pool,
 	)
 	if err != nil {
-		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash)
+	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
+
+	return
 }
 
-func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func dealWithSellData(
+	v1, v2 string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	pool *TxPool) {
 	input, _ := new(big.Int).SetString(v1, 16)
 	output, _ := new(big.Int).SetString(v2, 16)
 	totalCoin1 := new(big.Int).Sub(reserve1, input)
@@ -699,16 +763,23 @@ func dealWithSellData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *
 		amountIn,
 		amountOut,
 		new(big.Int).SetUint64(nonce),
+		pool,
 	)
 	if err != nil {
-		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash)
+	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
 }
 
-func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func dealWithBuyData(
+	v1, v2 string,
+	nonce uint64,
+	reserve0 *big.Int,
+	reserve1 *big.Int,
+	tx types.Transaction,
+	pool *TxPool) {
 	input, _ := new(big.Int).SetString(v1, 16)
 	output, _ := new(big.Int).SetString(v2, 16)
 	totalCoin1 := new(big.Int).Add(reserve1, input)
@@ -748,12 +819,14 @@ func dealWithBuyData(v1, v2 string, nonce uint64, reserve0 *big.Int, reserve1 *b
 		chainId,
 		amountIn,
 		amountOut,
-		new(big.Int).SetUint64(nonce))
+		new(big.Int).SetUint64(nonce),
+		pool)
 
 	if err != nil {
-		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash)
+		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash)
+	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
+
 }
