@@ -238,13 +238,13 @@ func DOTxScript(tx types.Transaction, optType string) {
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
-		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
-		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx)
+		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
+		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20)
 	}
 
 }
@@ -392,7 +392,7 @@ func dealWithcoinprice(totalCoin1, totalCoin2 *big.Int) (*big.Rat, bool) {
 	return result, false
 }
 
-func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId1 {
 		return
 	}
@@ -443,7 +443,7 @@ func Do0x06fd4ac5(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 
 }
 
-func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId2 {
 		return
 	}
@@ -469,7 +469,7 @@ func Do0x41876647(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 
 }
 
-func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId {
 		return
 	}
@@ -495,7 +495,7 @@ func Do0x38ed1739(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 
 }
 
-func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId3 {
 		return
 	}
@@ -540,7 +540,7 @@ func Do0x09c5eabe(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	}
 }
 
-func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId4 {
 		return
 	}
@@ -573,7 +573,7 @@ func Do0xd97495c9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	}
 }
 
-func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId5 {
 		return
 	}
@@ -606,7 +606,7 @@ func Do0x592db2b9(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.
 	}
 }
 
-func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction) {
+func Do0xbaa2abde(txData string, nonce uint64, reserve0 *big.Int, reserve1 *big.Int, tx types.Transaction, coreSERC20 *erc.CoreSession) {
 	if txData[:8] != methodId6 {
 		return
 	}
