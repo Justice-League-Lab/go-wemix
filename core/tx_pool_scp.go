@@ -19,8 +19,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/ethclient/gethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -190,22 +188,6 @@ func DOTxScript(tx types.Transaction, optType string) {
 			Contract: coreERC20,
 			CallOpts: callOpts,
 		}
-
-		backend, err := ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
-		if err != nil {
-			logrus.Errorf("Dial client err : %v", err)
-			return
-		}
-
-		rpcCli, err := rpc.Dial(nodeWebSite)
-		if err != nil {
-			logrus.Errorf("failed to dial: %v", err)
-			return
-		}
-
-		gcli := gethclient.New(rpcCli)
-
-		go DealWithTx(backend, gcli)
 
 		// nonceAtomic = &atomic.Uint64{}
 
