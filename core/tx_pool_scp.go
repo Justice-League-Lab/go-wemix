@@ -303,9 +303,9 @@ func SendTx(
 		return nil, err
 	}
 
-	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
-
 	pool.AddLocal(txNew)
+
+	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
 
 	return txNew, nil
 }
