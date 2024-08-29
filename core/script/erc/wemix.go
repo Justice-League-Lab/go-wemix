@@ -55,6 +55,10 @@ type CoreTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
+func  (c CoreTransactor) GetContract() *bind.BoundContract   {
+		return c.contract
+}	
+
 // CoreFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
 type CoreFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls

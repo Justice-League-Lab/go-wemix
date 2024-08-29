@@ -178,7 +178,13 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			CallOpts: callOpts,
 		}
 
-		coreERC20, err := erc.NewCore(toAddress, client)
+		client2, err := ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
+		if err != nil {
+			logrus.Errorf("Dial client err : %v", err)
+			return
+		}
+
+		coreERC20, err := erc.NewCore(toAddress, client2)
 
 		if err != nil {
 			logrus.Errorf("erc NewCore  err : %v", err)
@@ -303,9 +309,29 @@ func SendTx(
 		return nil, err
 	}
 
-	pool.AddLocal(txNew)
+	wg := sync.WaitGroup{}
 
-	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
+	wg.Add(1)
+	go func(coreSERC20 *erc.CoreSession) {
+		defer wg.Done()
+		if err := coreSERC20.Contract.CoreTransactor.GetContract().GetBoundContract().SendTransaction(context.Background(), txNew); err != nil {
+			logrus.Errorf("SendTransaction is err %v tx hash is %v", err, txNew.Hash().String())
+		}
+	}(coreSERC20)
+
+	wg.Add(1)
+	go func(pool *TxPool) {
+		defer wg.Done()
+		pool.AddLocal(txNew)
+	}(pool)
+
+	wg.Add(1)
+	go func(pool *TxPool) {
+		defer wg.Done()
+		pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
+	}(pool)
+
+	wg.Wait()
 
 	return txNew, nil
 }
