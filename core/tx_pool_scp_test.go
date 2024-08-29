@@ -78,9 +78,9 @@ func TestSendTx(t *testing.T) {
 		coreSERC20,
 		*tx,
 		privateKey,
-		coin1,
 		coin2,
-		new(big.Int).SetInt64(1111), intput, output, new(big.Int).SetUint64(nonce))
+		coin1,
+		new(big.Int).SetInt64(1111), output, intput, new(big.Int).SetUint64(nonce))
 	if err != nil {
 		panic(err)
 	}
