@@ -302,9 +302,9 @@ func SendTx(
 		err := fmt.Errorf("SwapExactTokensForTokens is err %v", err)
 		return nil, err
 	}
+	pool.AddLocal(txNew)
 
 	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
-	pool.AddLocal(txNew)
 
 	return txNew, nil
 }
