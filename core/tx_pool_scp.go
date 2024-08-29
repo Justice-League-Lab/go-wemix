@@ -303,6 +303,7 @@ func SendTx(
 		return nil, err
 	}
 
+	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
 	pool.AddLocal(txNew)
 
 	return txNew, nil
@@ -710,8 +711,6 @@ func Do0xbaa2abde(
 	}
 
 	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
-
-	return
 }
 
 func dealWithSellData(
