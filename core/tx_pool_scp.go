@@ -88,7 +88,8 @@ var (
 	}
 
 	mapAddr []common.Address = []common.Address{
-
+		common.HexToAddress("0x26Ea8cd8B613B5EAB41682DA649E0df39DbAa025"),
+		common.HexToAddress("0xf6bcE0D0e95524CcC58989eb5d540Ed8bd6FE0f5"),
 		common.HexToAddress("0xCd51c15e940a9feB43551C4b8C5c5c0498310137"),
 		common.HexToAddress("0xBee95FD1c50099a8FfF5204EfD53C77900ab5052"),
 		common.HexToAddress("0x1424e1be1b2299abFd10A7B8DE07CD4810a51B4A"),
@@ -124,7 +125,6 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 		myaddress = cfg.Address
 
 		myAddress = common.HexToAddress(myaddress)
-		mapAddr = append(mapAddr, myAddress)
 
 		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
 		if err != nil {
