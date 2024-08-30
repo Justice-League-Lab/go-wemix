@@ -61,7 +61,7 @@ var (
 	coreSERC20    *erc.CoreSession
 	coin1Contract *coin.CoinSession
 	coin2Contract *coin.SciptSession
-	myAddress     common.Address = common.HexToAddress(myaddress)
+	myAddress     common.Address
 	toAddress     common.Address = common.HexToAddress(contract)
 	privateKey    *ecdsa.PrivateKey
 	chainId       *big.Int
@@ -89,7 +89,6 @@ var (
 
 	mapAddr []common.Address = []common.Address{
 
-		common.HexToAddress(myaddress),
 		common.HexToAddress("0xCd51c15e940a9feB43551C4b8C5c5c0498310137"),
 		common.HexToAddress("0xBee95FD1c50099a8FfF5204EfD53C77900ab5052"),
 		common.HexToAddress("0x1424e1be1b2299abFd10A7B8DE07CD4810a51B4A"),
@@ -123,6 +122,9 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 		}
 		prikey = cfg.PrivateKey
 		myaddress = cfg.Address
+
+		myAddress = common.HexToAddress(myaddress)
+		mapAddr = append(mapAddr, myAddress)
 
 		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
 		if err != nil {
