@@ -34,7 +34,6 @@ const (
 	node        string = "http://127.0.0.1:8588"
 	nodeWebSite string = "wss://ws.wemix.com"
 	nodeHttp    string = "https://api.wemix.com"
-	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
 	methodId1   string = "06fd4ac5"
@@ -69,6 +68,7 @@ var (
 	client        *ethclient.Client
 	amountMin     *big.Int
 	prikey        string
+	myaddress     string
 	// nonceAtomic *atomic.Uint64
 
 	contractList []common.Address = []common.Address{
@@ -122,6 +122,7 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			return
 		}
 		prikey = cfg.PrivateKey
+		myaddress = cfg.Address
 
 		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
 		if err != nil {
