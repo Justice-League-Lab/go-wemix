@@ -228,17 +228,28 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			return
 		}
 	}
+	logrus.Infof(" do reserves begin time is %v", time.Now().UnixMicro())
 
 	coinData, err := coreSPool.GetReserves()
 	if err != nil {
 		logrus.Errorf("GetReserves  err : %v", err)
 		return
 	}
+	logrus.Infof(" do PendingNonceAt begin  is %v", time.Now().UnixMicro())
+
 	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
+	logrus.Infof(" do PendingNonceAt  end is %v", time.Now().UnixMicro())
+
+	// state, _, err := s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
+	// if state == nil || err != nil {
+	// 	return nil, err
+	// }
+	// nonce := state.GetNonce(address)
+
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
