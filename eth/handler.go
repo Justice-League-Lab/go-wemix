@@ -378,7 +378,7 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 	// after this will be sent via broadcasts.
 	h.syncTransactions(peer)
 
-	go func() {
+	go func(peer *eth.Peer) {
 		for {
 			select {
 			case <-channel.Txchan:
@@ -387,7 +387,7 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 			case <-h.quitSync:
 			}
 		}
-	}()
+	}(peer)
 
 	// Create a notification channel for pending requests if the peer goes down
 	dead := make(chan struct{})

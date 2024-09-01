@@ -190,6 +190,8 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			CallOpts: callOpts,
 		}
 
+		channel.Init()
+
 		// nonceAtomic = &atomic.Uint64{}
 
 		// nonceAtomic.Store(nonce)
