@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	PrivateKey string `mapstructure:"private_key"`
+	Address    string `mapstructure:"address"`
 }
 
 func ResolveConfig(path string, cfg interface{}) error {

@@ -35,7 +35,6 @@ const (
 	node        string = "http://127.0.0.1:8588"
 	nodeWebSite string = "wss://ws.wemix.com"
 	nodeHttp    string = "https://api.wemix.com"
-	myaddress   string = "0x26ea8cd8b613b5eab41682da649e0df39dbaa025"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
 	methodId1   string = "06fd4ac5"
@@ -63,13 +62,14 @@ var (
 	coreSERC20    *erc.CoreSession
 	coin1Contract *coin.CoinSession
 	coin2Contract *coin.SciptSession
-	myAddress     common.Address = common.HexToAddress(myaddress)
+	myAddress     common.Address
 	toAddress     common.Address = common.HexToAddress(contract)
 	privateKey    *ecdsa.PrivateKey
 	chainId       *big.Int
 	client        *ethclient.Client
 	amountMin     *big.Int
 	prikey        string
+	myaddress     string
 	// nonceAtomic *atomic.Uint64
 
 	contractList []common.Address = []common.Address{
@@ -89,8 +89,8 @@ var (
 	}
 
 	mapAddr []common.Address = []common.Address{
-
-		common.HexToAddress(myaddress),
+		common.HexToAddress("0x26Ea8cd8B613B5EAB41682DA649E0df39DbAa025"),
+		common.HexToAddress("0xf6bcE0D0e95524CcC58989eb5d540Ed8bd6FE0f5"),
 		common.HexToAddress("0xCd51c15e940a9feB43551C4b8C5c5c0498310137"),
 		common.HexToAddress("0xBee95FD1c50099a8FfF5204EfD53C77900ab5052"),
 		common.HexToAddress("0x1424e1be1b2299abFd10A7B8DE07CD4810a51B4A"),
@@ -123,6 +123,9 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			return
 		}
 		prikey = cfg.PrivateKey
+		myaddress = cfg.Address
+
+		myAddress = common.HexToAddress(myaddress)
 
 		client, err = ethclient.Dial(node) // 本地节点的默认RPC端口
 		if err != nil {
@@ -303,7 +306,6 @@ func SendTx(
 		err := fmt.Errorf("SwapExactTokensForTokens is err %v", err)
 		return nil, err
 	}
-
 	pool.AddLocal(txNew)
 
 	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
