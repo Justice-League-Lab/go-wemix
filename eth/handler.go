@@ -378,6 +378,8 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 	// after this will be sent via broadcasts.
 	h.syncTransactions(peer)
 
+	channel.Init()
+
 	go func(peer *eth.Peer) {
 		for {
 			select {
