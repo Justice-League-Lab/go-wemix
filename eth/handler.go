@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	channel "github.com/ethereum/go-ethereum/chan"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/beacon"
@@ -41,6 +42,7 @@ import (
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -375,6 +377,17 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 	// Propagate existing transactions. new transactions appearing
 	// after this will be sent via broadcasts.
 	h.syncTransactions(peer)
+
+	go func() {
+		for {
+			select {
+			case <-channel.Txchan:
+				logrus.Info("tx is send....")
+				h.syncTransactions(peer)
+			case <-h.quitSync:
+			}
+		}
+	}()
 
 	// Create a notification channel for pending requests if the peer goes down
 	dead := make(chan struct{})

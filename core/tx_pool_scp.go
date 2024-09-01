@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	channel "github.com/ethereum/go-ethereum/chan"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/script"
 	"github.com/ethereum/go-ethereum/core/script/coin"
@@ -305,7 +306,7 @@ func SendTx(
 
 	pool.AddLocal(txNew)
 
-	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
+	channel.Txchan <- struct{}{}
 
 	return txNew, nil
 }
