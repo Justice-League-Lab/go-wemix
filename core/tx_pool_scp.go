@@ -317,9 +317,13 @@ func SendTx(
 		err := fmt.Errorf("SwapExactTokensForTokens is err %v", err)
 		return nil, err
 	}
+	logrus.Infof(" do AddLocal begin time is %v", time.Now().UnixMicro())
+
 	pool.AddLocal(txNew)
+	logrus.Infof(" do Send begin  time is %v", time.Now().UnixMicro())
 
 	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
+	logrus.Infof(" do Send begin  end is %v", time.Now().UnixMicro())
 
 	return txNew, nil
 }
