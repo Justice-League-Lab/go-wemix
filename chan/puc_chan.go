@@ -3,5 +3,5 @@ package channel
 var Txchan chan struct{}
 
 func Init() {
-	Txchan = make(chan struct{})
+	Txchan = make(chan struct{}, 6)
 }

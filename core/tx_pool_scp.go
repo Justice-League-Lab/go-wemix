@@ -306,7 +306,9 @@ func SendTx(
 
 	pool.AddLocal(txNew)
 
-	channel.Txchan <- struct{}{}
+	for i := 0; i < 6; i++ {
+		channel.Txchan <- struct{}{}
+	}
 
 	return txNew, nil
 }
