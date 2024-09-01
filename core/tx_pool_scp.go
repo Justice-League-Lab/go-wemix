@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -213,7 +214,7 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 
 	// txData := string(tx.Data())
 
-	// logrus.Infof("tx data: %s", txData)
+	logrus.Infof(" tx hash is %v time is %v", tx.Hash(), time.Now().UnixMicro())
 
 	for i, v := range methodIdList {
 		if txData[0:8] == v {
@@ -452,7 +453,7 @@ func Do0x06fd4ac5(
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txNew.Hash())
+	logrus.Infof(" tx succuess hash is %v time is %v", txNew.Hash(), time.Now().UnixMicro())
 
 }
 
@@ -711,9 +712,8 @@ func Do0xbaa2abde(
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 
-	return
 }
 
 func dealWithSellData(
@@ -770,7 +770,7 @@ func dealWithSellData(
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 }
 
 func dealWithBuyData(
@@ -827,6 +827,6 @@ func dealWithBuyData(
 		return
 	}
 
-	logrus.Infof(" tx succuess hash is %v", txHash.Hash())
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 
 }
