@@ -32,7 +32,7 @@ const (
 
 const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
-	node        string = "http://127.0.0.1:8588"
+	node        string = "ws://127.0.0.1:8598"
 	nodeWebSite string = "wss://ws.wemix.com"
 	nodeHttp    string = "https://api.wemix.com"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
