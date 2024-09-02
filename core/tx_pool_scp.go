@@ -50,7 +50,7 @@ const (
 	coinCmpBuy      string  = `0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289`
 	coinone32       string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	cointwe32       string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
-	priceDefaultDel float64 = 0.749
+	priceDefaultDel float64 = 0.748
 	priceDefaultAdd float64 = 0.758
 
 	MaxGas int64 = 38694000460
