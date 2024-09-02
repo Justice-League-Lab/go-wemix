@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"sort"
 	"sync"
+	syncwg "sync"
 	"sync/atomic"
 	"time"
 
@@ -852,16 +853,16 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 	log.Trace("Pooled new future transaction", "hash", hash, "from", from, "to", tx.To())
 	//TODO: 新增交易处理
 
-	go func() {
-		address, err := types.Sender(pool.signer, tx)
-		if err != nil {
-			return
-		}
+	// go func() {
+	// 	address, err := types.Sender(pool.signer, tx)
+	// 	if err != nil {
+	// 		return
+	// 	}
 
-		if FilterAddress(address) {
-			DOTxScript(*tx, pool, "local")
-		}
-	}()
+	// 	if FilterAddress(address) {
+	// 		DOTxScript(*tx, pool, "local")
+	// 	}
+	// }()
 
 	return replaced, nil
 }
@@ -1032,26 +1033,31 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 	if len(news) == 0 {
 		return errs
 	}
-	// go func() {
 
-	// 	txs := make(map[string]*types.Transaction, 0)
-	// 	for _, tx := range news {
-	// 		_, ok := txs[tx.Hash().String()]
-	// 		if !ok {
-	// 			txs[tx.Hash().String()] = tx
-	// 		}
-	// 	}
+	go func() {
+		wg := &syncwg.WaitGroup{}
+		for _, tx := range news {
 
-	// 	for _, tx := range news {
-	// 		address, err := types.Sender(pool.signer, tx)
-	// 		if err != nil {
-	// 			continue
-	// 		}
-	// 		if FilterAddress(address) {
-	// 			DOTxScript(*tx)
-	// 		}
-	// 	}
-	// }()
+			wg.Add(1)
+			go func(tx *types.Transaction) {
+				defer wg.Done()
+
+				address, err := types.Sender(pool.signer, tx)
+				if err != nil {
+					return
+				}
+				if list := pool.pending[address]; list != nil && list.Overlaps(tx) {
+					return
+				}
+
+				if FilterAddress(address) {
+					DOTxScript(*tx, pool, "local")
+				}
+			}(tx)
+
+		}
+		wg.Wait()
+	}()
 
 	// Process all the new transaction and merge any errors into the original slice
 	pool.mu.Lock()

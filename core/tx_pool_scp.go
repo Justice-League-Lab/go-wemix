@@ -50,8 +50,8 @@ const (
 	coinCmpBuy      string  = `0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289`
 	coinone32       string  = "0000000000000000000000008e81fcc2d4a3baa0ee9044e0d7e36f59c9bba9c1"
 	cointwe32       string  = "000000000000000000000000770d9d14c4ae2f78dca810958c1d9b7ea4620289"
-	priceDefaultDel float64 = 0.745
-	priceDefaultAdd float64 = 0.75
+	priceDefaultDel float64 = 0.746
+	priceDefaultAdd float64 = 0.752
 
 	MaxGas int64 = 38694000460
 )
@@ -228,21 +228,18 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			return
 		}
 	}
-	logrus.Infof(" do reserves begin time is %v", time.Now().UnixMicro())
 
 	coinData, err := coreSPool.GetReserves()
 	if err != nil {
 		logrus.Errorf("GetReserves  err : %v", err)
 		return
 	}
-	logrus.Infof(" do PendingNonceAt begin  is %v", time.Now().UnixMicro())
 
 	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-	logrus.Infof(" do PendingNonceAt  end is %v", time.Now().UnixMicro())
 
 	// state, _, err := s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	// if state == nil || err != nil {
@@ -317,13 +314,10 @@ func SendTx(
 		err := fmt.Errorf("SwapExactTokensForTokens is err %v", err)
 		return nil, err
 	}
-	logrus.Infof(" do AddLocal begin time is %v", time.Now().UnixMicro())
 
 	pool.AddLocal(txNew)
-	logrus.Infof(" do Send begin  time is %v", time.Now().UnixMicro())
 
 	pool.txFeed.Send(NewTxsEvent{Txs: types.Transactions{txNew}})
-	logrus.Infof(" do Send begin  end is %v", time.Now().UnixMicro())
 
 	return txNew, nil
 }
