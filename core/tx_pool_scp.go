@@ -334,7 +334,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 
 	var balance, amountIn, amountOut *big.Int
 	if optType == SellType {
-		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 240000))), big.NewInt(1e18))
+		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 180000))), big.NewInt(1e18))
 
 		var err error
 		balance, err = coin2Contract.BalanceOf(myAddress)
@@ -351,7 +351,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 			return nil, nil
 		}
 
-		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(74812)), big.NewInt(100000))
+		amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(75270)), big.NewInt(100000))
 
 	}
 
