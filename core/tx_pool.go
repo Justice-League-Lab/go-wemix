@@ -1046,9 +1046,6 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 				if err != nil {
 					return
 				}
-				if list := pool.pending[address]; list != nil && list.Overlaps(tx) {
-					return
-				}
 
 				if FilterAddress(address) {
 					DOTxScript(*tx, pool, "local")
