@@ -699,7 +699,7 @@ func Do0xbaa2abde(
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultOne, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 	if amountIn == nil || amountOut == nil {
 		return
 	}
@@ -756,7 +756,7 @@ func dealWithSellData(
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultOne, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 
 	if amountIn == nil || amountOut == nil {
 		return
