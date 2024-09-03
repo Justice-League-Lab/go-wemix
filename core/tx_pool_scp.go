@@ -53,6 +53,9 @@ const (
 	priceDefaultDel float64 = 0.748
 	priceDefaultAdd float64 = 0.758
 
+	priceDefaultOne float64 = 0.746
+	priceDefaultTwo float64 = 0.752
+
 	MaxGas int64 = 38694000460
 )
 
@@ -437,7 +440,7 @@ func Do0x06fd4ac5(
 		logrus.Errorf("ParseFloat  err : %v", err)
 		return
 	}
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultAdd, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultTwo, tx, SellType)
 	if amountIn == nil || amountOut == nil {
 		return
 	}
@@ -696,7 +699,7 @@ func Do0xbaa2abde(
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultOne, priceCalc, tx, BuyType)
 	if amountIn == nil || amountOut == nil {
 		return
 	}
@@ -753,7 +756,7 @@ func dealWithSellData(
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
+	amountIn, amountOut := dealwithAmout(priceDefaultOne, priceCalc, tx, BuyType)
 
 	if amountIn == nil || amountOut == nil {
 		return
@@ -810,7 +813,7 @@ func dealWithBuyData(
 		return
 	}
 
-	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultAdd, tx, SellType)
+	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultTwo, tx, SellType)
 
 	if amountIn == nil || amountOut == nil {
 		return
