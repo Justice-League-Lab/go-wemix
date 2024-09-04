@@ -312,7 +312,7 @@ func SendTx(
 		return nil, err
 	}
 
-	pool.AddLocal(txNew)
+	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
 
 	return txNew, nil
 }

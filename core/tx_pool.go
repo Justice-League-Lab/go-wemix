@@ -31,6 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/prque"
 	"github.com/ethereum/go-ethereum/consensus/misc"
+	"github.com/sirupsen/logrus"
 
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -1277,6 +1278,30 @@ func (pool *TxPool) scheduleReorgLoop() {
 			return
 		}
 	}
+}
+
+func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *types.Transaction) {
+	pool.mu.Lock()
+	if !pool.promoteTx(addr, hash, tx) {
+		logrus.Errorf("promote tx error")
+	}
+	queuedEvents := make(map[common.Address]*txSortedMap)
+	addrs, _ := types.Sender(pool.signer, tx)
+	if _, ok := queuedEvents[addr]; !ok {
+		queuedEvents[addrs] = newTxSortedMap()
+	}
+	queuedEvents[addr].Put(tx)
+
+	if len(queuedEvents) > 0 {
+		var txs []*types.Transaction
+		for _, set := range queuedEvents {
+			txs = append(txs, set.Flatten()...)
+		}
+		pool.txFeed.Send(NewTxsEvent{txs})
+	}
+
+	pool.mu.Unlock()
+
 }
 
 // runReorg runs reset and promoteExecutables on behalf of scheduleReorgLoop.
