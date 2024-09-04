@@ -34,7 +34,7 @@ const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "ws://127.0.0.1:8598"
 	nodeWebSite string = "wss://ws.wemix.com"
-	nodeHttp    string = "https://api.wemix.com"
+	nodeHttp    string = "wss://lb.drpc.org/ogws?network=wemix&dkey=At6iVm_67EUUmrO42BzE5YnRTj0ParUR7709Uh7cII5S"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
 	methodId    string = "38ed1739"
 	methodId1   string = "06fd4ac5"
@@ -73,6 +73,7 @@ var (
 	amountMin     *big.Int
 	prikey        string
 	myaddress     string
+	client2       *ethclient.Client
 	// nonceAtomic *atomic.Uint64
 
 	contractList []common.Address = []common.Address{
@@ -196,6 +197,12 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			CallOpts: callOpts,
 		}
 
+		client2, err = ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
+		if err != nil {
+			logrus.Errorf("Dial client err : %v", err)
+			return
+		}
+
 		// nonceAtomic = &atomic.Uint64{}
 
 		// nonceAtomic.Store(nonce)
@@ -317,7 +324,24 @@ func SendTx(
 		return nil, err
 	}
 
-	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
+		logrus.Infof("AddPendingTx is successful time is %d", time.Now().UnixMicro())
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := client2.SendTransaction(context.Background(), txNew)
+		if err != nil {
+			logrus.Errorf("SendTransaction is err %v", err)
+			return
+		}
+		logrus.Infof("SendTransaction is successful time is %d", time.Now().UnixMicro())
+	}()
+	wg.Wait()
 
 	return txNew, nil
 }
