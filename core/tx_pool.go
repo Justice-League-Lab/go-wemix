@@ -1004,6 +1004,53 @@ func (pool *TxPool) AddRemote(tx *types.Transaction) error {
 	return errs[0]
 }
 
+var (
+	onceDo sync.Once
+	txMap  *TxMap
+)
+
+type TxMap struct {
+	Rw    *sync.RWMutex
+	TxMap map[string]string
+}
+
+func NewTxMap() *TxMap {
+	return &TxMap{
+		Rw:    &syncwg.RWMutex{},
+		TxMap: make(map[string]string),
+	}
+}
+
+// func (m *TxMap) clear() {
+// 	m.Rw.Lock()
+// 	defer m.Rw.Unlock()
+// 	for k, v := range m.TxMap {
+// 		if v < 10 {
+// 			delete(m.TxMap, k)
+// 		}
+// 	}
+
+// }
+
+func (m *TxMap) isExiet(key, value string) bool {
+	m.Rw.Lock()
+	defer m.Rw.Unlock()
+	v, ok := m.TxMap[key]
+
+	if !ok {
+		m.TxMap[key] = value
+		return false
+	}
+
+	if v == value {
+		return true
+	}
+
+	m.TxMap[key] = value
+
+	return false
+}
+
 // addTxs attempts to queue a batch of transactions if they are valid.
 func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 	// Filter out known ones without obtaining the pool lock or recovering signatures
@@ -1035,6 +1082,10 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 		return errs
 	}
 
+	onceDo.Do(func() {
+		txMap = NewTxMap()
+	})
+
 	go func() {
 		wg := &syncwg.WaitGroup{}
 		for _, tx := range news {
@@ -1049,6 +1100,10 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 				}
 
 				if FilterAddress(address) {
+					if txMap.isExiet(address.String(), tx.Hash().String()) {
+						logrus.Infof("is hash repeat hash %v", tx.Hash().String())
+						return
+					}
 					DOTxScript(*tx, pool, "local")
 				}
 			}(tx)
