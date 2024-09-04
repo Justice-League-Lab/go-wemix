@@ -1282,8 +1282,19 @@ func (pool *TxPool) scheduleReorgLoop() {
 
 func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *types.Transaction) {
 	pool.mu.Lock()
+
+	// New transaction isn't replacing a pending one, push into queue
+	// _, err := pool.enqueueTx(hash, tx, false, true)
+	// if err != nil {
+	// 	logrus.Errorf("enqueueTx tx error %v", err)
+	// 	return
+	// }
+
+	pool.journalTx(addr, tx)
+
 	if !pool.promoteTx(addr, hash, tx) {
 		logrus.Errorf("promote tx error")
+		return
 	}
 	queuedEvents := make(map[common.Address]*txSortedMap)
 	addrs, _ := types.Sender(pool.signer, tx)
