@@ -238,12 +238,6 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 		return
 	}
 
-	nonce, err := client.PendingNonceAt(context.Background(), myAddress)
-	if err != nil {
-		logrus.Errorf("NonceAt  err : %v", err)
-		return
-	}
-
 	// state, _, err := s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	// if state == nil || err != nil {
 	// 	return nil, err
@@ -253,13 +247,13 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
 
 	{
-		Do0x06fd4ac5(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x09c5eabe(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x38ed1739(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x41876647(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x592db2b9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0xbaa2abde(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0xd97495c9(txData, nonce, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x06fd4ac5(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x09c5eabe(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x38ed1739(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x41876647(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x592db2b9(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0xbaa2abde(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0xd97495c9(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
 	}
 
 }
@@ -412,7 +406,6 @@ func dealWithcoinprice(totalCoin1, totalCoin2 *big.Int) (*big.Rat, bool) {
 
 func Do0x06fd4ac5(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -421,6 +414,7 @@ func Do0x06fd4ac5(
 	if txData[:8] != methodId1 {
 		return
 	}
+
 	output, _ := new(big.Int).SetString(txData[9:72], 16)
 	input := new(big.Int).Div(new(big.Int).Mul(output, new(big.Int).SetInt64(75)), new(big.Int).SetInt64(100))
 
@@ -432,6 +426,18 @@ func Do0x06fd4ac5(
 	if !ok {
 		return
 	}
+	var nonce uint64
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var err error
+		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
+	}()
 
 	decimalPos2 := result.FloatString(5)
 
@@ -446,6 +452,8 @@ func Do0x06fd4ac5(
 	}
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+
+	wg.Wait()
 
 	txNew, err := SendTx(
 		client,
@@ -471,7 +479,6 @@ func Do0x06fd4ac5(
 
 func Do0x41876647(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -493,18 +500,17 @@ func Do0x41876647(
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithBuyData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithSellData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 }
 
 func Do0x38ed1739(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -526,18 +532,17 @@ func Do0x38ed1739(
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithBuyData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithSellData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 }
 
 func Do0x09c5eabe(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -579,17 +584,16 @@ func Do0x09c5eabe(
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithBuyData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithSellData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 }
 
 func Do0xd97495c9(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -619,17 +623,16 @@ func Do0xd97495c9(
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithBuyData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithSellData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 }
 
 func Do0x592db2b9(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -659,17 +662,16 @@ func Do0x592db2b9(
 		optType = SellType
 	}
 	if optType == BuyType {
-		dealWithBuyData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithBuyData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 
 	if optType == SellType {
-		dealWithSellData(v1, v2, nonce, reserve0, reserve1, tx, pool)
+		dealWithSellData(v1, v2, reserve0, reserve1, tx, pool)
 	}
 }
 
 func Do0xbaa2abde(
 	txData string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -688,7 +690,18 @@ func Do0xbaa2abde(
 	if !ok {
 		return
 	}
-
+	var nonce uint64
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var err error
+		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
+	}()
 	//TODO：send tx
 
 	decimalPos2 := result.FloatString(5)
@@ -705,6 +718,7 @@ func Do0xbaa2abde(
 	}
 
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
@@ -730,7 +744,6 @@ func Do0xbaa2abde(
 
 func dealWithSellData(
 	v1, v2 string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -745,6 +758,19 @@ func dealWithSellData(
 	if !ok {
 		return
 	}
+
+	var nonce uint64
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var err error
+		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
+	}()
 
 	//TODO：send tx
 
@@ -763,6 +789,7 @@ func dealWithSellData(
 	}
 
 	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
@@ -787,7 +814,6 @@ func dealWithSellData(
 
 func dealWithBuyData(
 	v1, v2 string,
-	nonce uint64,
 	reserve0 *big.Int,
 	reserve1 *big.Int,
 	tx types.Transaction,
@@ -802,6 +828,19 @@ func dealWithBuyData(
 	if !ok {
 		return
 	}
+
+	var nonce uint64
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		var err error
+		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
+	}()
 
 	//TODO：send tx
 
@@ -820,6 +859,7 @@ func dealWithBuyData(
 	}
 
 	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
