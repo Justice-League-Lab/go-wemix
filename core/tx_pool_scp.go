@@ -73,7 +73,7 @@ var (
 	amountMin     *big.Int
 	prikey        string
 	myaddress     string
-	client2       *ethclient.Client
+	// client2       *ethclient.Client
 	// nonceAtomic *atomic.Uint64
 
 	contractList []common.Address = []common.Address{
@@ -197,11 +197,11 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			CallOpts: callOpts,
 		}
 
-		client2, err = ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
-		if err != nil {
-			logrus.Errorf("Dial client err : %v", err)
-			return
-		}
+		// client2, err = ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
+		// if err != nil {
+		// 	logrus.Errorf("Dial client err : %v", err)
+		// 	return
+		// }
 
 		// nonceAtomic = &atomic.Uint64{}
 
@@ -324,24 +324,26 @@ func SendTx(
 		return nil, err
 	}
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
-		logrus.Infof("AddPendingTx is successful time is %d", time.Now().UnixMicro())
-	}()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		err := client2.SendTransaction(context.Background(), txNew)
-		if err != nil {
-			logrus.Errorf("SendTransaction is err %v", err)
-			return
-		}
-		logrus.Infof("SendTransaction is successful time is %d", time.Now().UnixMicro())
-	}()
-	wg.Wait()
+	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
+
+	// wg := new(sync.WaitGroup)
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
+	// 	logrus.Infof("AddPendingTx is successful time is %d", time.Now().UnixMicro())
+	// }()
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	err := client2.SendTransaction(context.Background(), txNew)
+	// 	if err != nil {
+	// 		logrus.Errorf("SendTransaction is err %v", err)
+	// 		return
+	// 	}
+	// 	logrus.Infof("SendTransaction is successful time is %d", time.Now().UnixMicro())
+	// }()
+	// wg.Wait()
 
 	return txNew, nil
 }
