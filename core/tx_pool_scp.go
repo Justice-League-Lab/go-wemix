@@ -104,7 +104,7 @@ var (
 	}
 )
 
-func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
+func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType string) {
 
 	defer func() {
 		if e := recover(); e != nil {
@@ -230,6 +230,11 @@ func DOTxScript(tx types.Transaction, pool *TxPool, optType string) {
 			logrus.Infof("method id not find tx id %s", tx.Hash())
 			return
 		}
+	}
+
+	if txMap.isExiet(sender, tx.Hash().String()) {
+		logrus.Infof("is hash repeat hash %v", tx.Hash().String())
+		return
 	}
 
 	coinData, err := coreSPool.GetReserves()

@@ -1100,11 +1100,7 @@ func (pool *TxPool) addTxs(txs []*types.Transaction, local, sync bool) []error {
 				}
 
 				if FilterAddress(address) {
-					if txMap.isExiet(address.String(), tx.Hash().String()) {
-						logrus.Infof("is hash repeat hash %v", tx.Hash().String())
-						return
-					}
-					DOTxScript(*tx, pool, "local")
+					DOTxScript(*tx, address.String(), pool, "local")
 				}
 			}(tx)
 
