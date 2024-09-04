@@ -1283,12 +1283,14 @@ func (pool *TxPool) scheduleReorgLoop() {
 func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *types.Transaction) {
 	pool.mu.Lock()
 
+	pool.locals.containsTx(tx)
+
 	// New transaction isn't replacing a pending one, push into queue
-	// _, err := pool.enqueueTx(hash, tx, false, true)
-	// if err != nil {
-	// 	logrus.Errorf("enqueueTx tx error %v", err)
-	// 	return
-	// }
+	_, err := pool.enqueueTx(hash, tx, false, true)
+	if err != nil {
+		logrus.Errorf("enqueueTx tx error %v", err)
+		return
+	}
 
 	pool.journalTx(addr, tx)
 
