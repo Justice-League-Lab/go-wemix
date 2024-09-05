@@ -351,6 +351,9 @@ func SendTx(
 func FilterAddress(addr common.Address) bool {
 	for _, v := range mapAddr {
 		if strings.EqualFold(v.String(), addr.String()) {
+			if strings.EqualFold(v.String(), "0xCd51c15e940a9feB43551C4b8C5c5c0498310137") {
+				logrus.Infof("address is send time is %v", time.Now().UnixMicro())
+			}
 			return false
 		}
 	}
