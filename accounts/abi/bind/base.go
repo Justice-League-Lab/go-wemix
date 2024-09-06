@@ -210,6 +210,16 @@ func (c *BoundContract) Call(opts *CallOpts, results *[]interface{}, method stri
 	return c.abi.UnpackIntoInterface(res[0], method, output)
 }
 
+func (c *BoundContract) BuildTransact(opts *TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	input, err := c.abi.Pack(method, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.BuildTx(opts, &c.address, input)
+
+}
+
 // Transact invokes the (paid) contract method with params as input values.
 func (c *BoundContract) Transact(opts *TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	// Otherwise pack up the parameters and invoke the contract
@@ -360,6 +370,26 @@ func (c *BoundContract) getNonce(opts *TransactOpts) (uint64, error) {
 	} else {
 		return opts.Nonce.Uint64(), nil
 	}
+}
+
+func (c *BoundContract) BuildTx(opts *TransactOpts, contract *common.Address, input []byte) (*types.Transaction, error) {
+	var err error
+
+	baseTx := &types.DynamicFeeTx{
+		To:        contract,
+		Nonce:     opts.Nonce.Uint64(),
+		GasFeeCap: opts.GasFeeCap,
+		GasTipCap: opts.GasTipCap,
+		Gas:       opts.GasLimit,
+		Value:     opts.Value,
+		Data:      input,
+	}
+	signedTx, err := opts.Signer(opts.From, types.NewTx(baseTx))
+	if err != nil {
+		return nil, err
+	}
+
+	return signedTx, err
 }
 
 // transact executes an actual transaction invocation, first deriving any missing

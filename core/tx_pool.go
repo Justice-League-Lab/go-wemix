@@ -1333,7 +1333,6 @@ func (pool *TxPool) scheduleReorgLoop() {
 
 func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *types.Transaction) {
 	pool.mu.Lock()
-	logrus.Infof(" tx  Send begin is  time is %v", time.Now().UnixMicro())
 
 	pool.locals.containsTx(tx)
 
@@ -1362,7 +1361,6 @@ func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *type
 		}
 
 		pool.txFeed.Send(NewTxsEvent{txs})
-		logrus.Infof(" tx  Send begin  time is %v", time.Now().UnixMicro())
 
 	}
 

@@ -364,7 +364,7 @@ func SendTx(
 
 	dealline, _ := new(big.Int).SetString("115792089237316195423570985008687907853269984665640564039457584007913129639935", 10)
 
-	txNew, err := coreSERC20.SwapExactTokensForTokens(
+	txNew, err := coreSERC20.BuildTx(
 		amountIn,
 		amountOut,
 		[]common.Address{

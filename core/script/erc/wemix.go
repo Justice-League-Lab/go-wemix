@@ -534,6 +534,14 @@ func (_Core *CoreTransactor) SwapExactTokensForTokens(opts *bind.TransactOpts, a
 	return _Core.contract.Transact(opts, "swapExactTokensForTokens", amountIn, amountOutMin, path, to, deadline)
 }
 
+func (_Core *CoreSession) BuildTx( amountIn *big.Int, amountOutMin *big.Int, path []common.Address, to common.Address, deadline *big.Int) (*types.Transaction, error) {
+	return _Core.Contract.BuildTx(&_Core.TransactOpts, amountIn, amountOutMin, path, to, deadline)
+}
+
+func (_Core *CoreTransactor) BuildTx(opts *bind.TransactOpts, amountIn *big.Int, amountOutMin *big.Int, path []common.Address, to common.Address, deadline *big.Int) (*types.Transaction, error) {
+	return _Core.contract.BuildTransact(opts, "swapExactTokensForTokens", amountIn, amountOutMin, path, to, deadline)
+}
+
 // SwapExactTokensForTokens is a paid mutator transaction binding the contract method 0x38ed1739.
 //
 // Solidity: function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to, uint256 deadline) returns(uint256[] amounts)
