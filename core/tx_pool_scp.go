@@ -60,27 +60,25 @@ const (
 )
 
 var (
-	once          sync.Once
-	coreSPool     *script.CoreSession
-	coreSERC20    *erc.CoreSession
-	coin1Contract *coin.CoinSession
-	coin2Contract *coin.SciptSession
-	myAddress     common.Address
-	toAddress     common.Address = common.HexToAddress(contract)
-	privateKey    *ecdsa.PrivateKey
-	chainId       *big.Int
-	client        *ethclient.Client
-	amountMin     *big.Int
-	prikey        string
-	myaddress     string
-	nonceGlobal   uint64
-	coin1Balance  *big.Int
-	coin2Balance  *big.Int
-	coinData      struct {
-		Reserve0           *big.Int
-		Reserve1           *big.Int
-		BlockTimestampLast uint32
-	}
+	once            sync.Once
+	coreSPool       *script.CoreSession
+	coreSERC20      *erc.CoreSession
+	coin1Contract   *coin.CoinSession
+	coin2Contract   *coin.SciptSession
+	myAddress       common.Address
+	toAddress       common.Address = common.HexToAddress(contract)
+	privateKey      *ecdsa.PrivateKey
+	chainId         *big.Int
+	client          *ethclient.Client
+	amountMin       *big.Int
+	prikey          string
+	myaddress       string
+	nonceGlobal     uint64
+	coin1Balance    *big.Int
+	coin2Balance    *big.Int
+	reserve0Balance *big.Int
+	reserve1Balance *big.Int
+
 	isStart bool
 
 	contractList []common.Address = []common.Address{
@@ -100,7 +98,7 @@ var (
 	}
 
 	mapAddr []common.Address = []common.Address{
-		common.HexToAddress("0x26Ea8cd8B613B5EAB41682DA649E0df39DbAa025"),
+		common.HexToAddress("0xA2660079Fb1C44d5200FFDBacC09F78E78298Cb6"),
 		common.HexToAddress("0xf6bcE0D0e95524CcC58989eb5d540Ed8bd6FE0f5"),
 		common.HexToAddress("0xCd51c15e940a9feB43551C4b8C5c5c0498310137"),
 		common.HexToAddress("0xBee95FD1c50099a8FfF5204EfD53C77900ab5052"),
@@ -143,12 +141,14 @@ func RefreshConst(ctx context.Context) {
 				continue
 			}
 
-			coinData, err = coreSPool.GetReserves()
+			coinData, err := coreSPool.GetReserves()
 			if err != nil {
 				logrus.Errorf("GetReserves  err : %v", err)
 				timer.Reset(1 * time.Second)
 				continue
 			}
+			reserve0Balance = coinData.Reserve0
+			reserve1Balance = coinData.Reserve1
 
 			timer.Reset(1 * time.Second)
 		}
@@ -310,16 +310,16 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 	// }
 	// nonce := state.GetNonce(address)
 
-	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", coinData.Reserve0, coinData.Reserve1)
+	// logrus.Infof("crow pool balance is %v  , wemix pool balance is %v", reserve0Balance, reserve1Balance)
 
 	{
-		Do0x06fd4ac5(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x09c5eabe(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x38ed1739(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x41876647(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0x592db2b9(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0xbaa2abde(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
-		Do0xd97495c9(txData, coinData.Reserve0, coinData.Reserve1, tx, coreSERC20, pool)
+		Do0x06fd4ac5(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0x09c5eabe(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0x38ed1739(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0x41876647(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0x592db2b9(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0xbaa2abde(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
+		Do0xd97495c9(txData, reserve0Balance, reserve1Balance, tx, coreSERC20, pool)
 	}
 
 }
