@@ -1361,7 +1361,11 @@ func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *type
 		for _, set := range queuedEvents {
 			txs = append(txs, set.Flatten()...)
 		}
+		logrus.Infof(" tx  Send begin is %v time is %v", time.Now().UnixMicro())
+
 		pool.txFeed.Send(NewTxsEvent{txs})
+		logrus.Infof(" tx  Send begin %v time is %v", time.Now().UnixMicro())
+
 	}
 
 	pool.mu.Unlock()

@@ -808,8 +808,6 @@ func dealWithSellData(
 	totalCoin1 := new(big.Int).Sub(reserve1, input)
 	totalCoin2 := new(big.Int).Add(reserve0, output)
 
-	logrus.Infof(" dealWithcoinprice begin  time is %v", time.Now().UnixMicro())
-
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
 	if !ok {
@@ -825,14 +823,12 @@ func dealWithSellData(
 		logrus.Errorf("ParseFloat  err : %v", err)
 		return
 	}
-	logrus.Infof(" dealwithAmout begin  time is %v", time.Now().UnixMicro())
 
 	amountIn, amountOut := dealwithAmout(priceDefaultDel, priceCalc, tx, BuyType)
 
 	if amountIn == nil || amountOut == nil {
 		return
 	}
-	logrus.Infof(" SendTx begin  time is %v", time.Now().UnixMicro())
 
 	// logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 
@@ -875,8 +871,6 @@ func dealWithBuyData(
 	totalCoin1 := new(big.Int).Add(reserve1, input)
 	totalCoin2 := new(big.Int).Sub(reserve0, output)
 
-	logrus.Infof(" dealWithcoinprice begin  time is %v", time.Now().UnixMicro())
-
 	result, ok := dealWithcoinprice(totalCoin1, totalCoin2)
 
 	if !ok {
@@ -893,8 +887,6 @@ func dealWithBuyData(
 		return
 	}
 
-	logrus.Infof(" dealwithAmout begin  time is %v", time.Now().UnixMicro())
-
 	amountIn, amountOut := dealwithAmout(priceCalc, priceDefaultTwo, tx, SellType)
 
 	if amountIn == nil || amountOut == nil {
@@ -902,8 +894,6 @@ func dealWithBuyData(
 	}
 
 	// logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
-
-	logrus.Infof(" SendTx begin  time is %v", time.Now().UnixMicro())
 
 	txHash, err := SendTx(
 		client,
