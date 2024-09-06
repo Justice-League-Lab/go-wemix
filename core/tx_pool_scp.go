@@ -73,8 +73,9 @@ var (
 	amountMin     *big.Int
 	prikey        string
 	myaddress     string
-	// client2       *ethclient.Client
-	// nonceAtomic *atomic.Uint64
+	nonceGlobal   uint64
+	coin1Balance  *big.Int
+	coin2Balance  *big.Int
 
 	contractList []common.Address = []common.Address{
 		common.HexToAddress(contract),
@@ -197,15 +198,23 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			CallOpts: callOpts,
 		}
 
-		// client2, err = ethclient.Dial(nodeHttp) // 本地节点的默认RPC端口
-		// if err != nil {
-		// 	logrus.Errorf("Dial client err : %v", err)
-		// 	return
-		// }
+		nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
+		if err != nil {
+			logrus.Errorf("NonceAt  err : %v", err)
+			return
+		}
 
-		// nonceAtomic = &atomic.Uint64{}
+		coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Errorf("BalanceOf get err: %v ", err)
+			return
+		}
 
-		// nonceAtomic.Store(nonce)
+		coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+		if err != nil {
+			logrus.Errorf("BalanceOf get err: %v ", err)
+			return
+		}
 
 	})
 	// from := tx.
@@ -326,25 +335,6 @@ func SendTx(
 
 	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
 
-	// wg := new(sync.WaitGroup)
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	pool.AddPendingTx(myAddress, txNew.Hash(), txNew)
-	// 	logrus.Infof("AddPendingTx is successful time is %d", time.Now().UnixMicro())
-	// }()
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	err := client2.SendTransaction(context.Background(), txNew)
-	// 	if err != nil {
-	// 		logrus.Errorf("SendTransaction is err %v", err)
-	// 		return
-	// 	}
-	// 	logrus.Infof("SendTransaction is successful time is %d", time.Now().UnixMicro())
-	// }()
-	// wg.Wait()
-
 	return txNew, nil
 }
 
@@ -367,13 +357,13 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 	if optType == SellType {
 		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 240000))), big.NewInt(1e18))
 
-		var err error
-		balance, err = coin2Contract.BalanceOf(myAddress)
-		if err != nil {
-			logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-			return nil, nil
-		}
-		if balance.Cmp(amountIn) < 1 {
+		// var err error
+		// balance, err = coin2Contract.BalanceOf(myAddress)
+		// if err != nil {
+		// 	logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		// 	return nil, nil
+		// }
+		if coin2Balance.Cmp(amountIn) < 1 {
 			amountIn = balance
 		}
 
@@ -394,13 +384,13 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 			return nil, nil
 		}
 		amountIn = new(big.Int).Div(new(big.Int).Mul(amountOut, big.NewInt(75000)), big.NewInt(100000))
-		var err error
-		balance, err = coin1Contract.BalanceOf(myAddress)
-		if err != nil {
-			logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-			return nil, nil
-		}
-		if balance.Cmp(amountIn) < 1 {
+		// var err error
+		// balance, err = coin1Contract.BalanceOf(myAddress)
+		// if err != nil {
+		// 	logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		// 	return nil, nil
+		// }
+		if coin1Balance.Cmp(amountIn) < 1 {
 			amountIn = balance
 			if amountMin.Cmp(amountIn) == 1 {
 				// logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
@@ -460,18 +450,6 @@ func Do0x06fd4ac5(
 	if !ok {
 		return
 	}
-	var nonce uint64
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var err error
-		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
-		if err != nil {
-			logrus.Errorf("NonceAt  err : %v", err)
-			return
-		}
-	}()
 
 	decimalPos2 := result.FloatString(5)
 
@@ -487,8 +465,6 @@ func Do0x06fd4ac5(
 
 	// logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
-	wg.Wait()
-
 	txNew, err := SendTx(
 		client,
 		coreSERC20,
@@ -499,11 +475,29 @@ func Do0x06fd4ac5(
 		chainId,
 		amountIn,
 		amountOut,
-		new(big.Int).SetUint64(nonce),
+		new(big.Int).SetUint64(nonceGlobal),
 		pool,
 	)
 	if err != nil {
 		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txNew.Hash())
+		return
+	}
+
+	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+
+	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		return
+	}
+
+	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
 		return
 	}
 
@@ -724,18 +718,7 @@ func Do0xbaa2abde(
 	if !ok {
 		return
 	}
-	var nonce uint64
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var err error
-		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
-		if err != nil {
-			logrus.Errorf("NonceAt  err : %v", err)
-			return
-		}
-	}()
+
 	//TODO：send tx
 
 	decimalPos2 := result.FloatString(5)
@@ -752,7 +735,6 @@ func Do0xbaa2abde(
 	}
 
 	// logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
-	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
@@ -764,11 +746,29 @@ func Do0xbaa2abde(
 		chainId,
 		amountIn,
 		amountOut,
-		new(big.Int).SetUint64(nonce),
+		new(big.Int).SetUint64(nonceGlobal),
 		pool,
 	)
 	if err != nil {
 		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
+		return
+	}
+
+	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+
+	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		return
+	}
+
+	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
 		return
 	}
 
@@ -793,19 +793,6 @@ func dealWithSellData(
 		return
 	}
 
-	var nonce uint64
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var err error
-		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
-		if err != nil {
-			logrus.Errorf("NonceAt  err : %v", err)
-			return
-		}
-	}()
-
 	//TODO：send tx
 
 	decimalPos2 := result.FloatString(5)
@@ -823,7 +810,6 @@ func dealWithSellData(
 	}
 
 	// logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
-	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
@@ -835,11 +821,29 @@ func dealWithSellData(
 		chainId,
 		amountIn,
 		amountOut,
-		new(big.Int).SetUint64(nonce),
+		new(big.Int).SetUint64(nonceGlobal),
 		pool,
 	)
 	if err != nil {
 		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
+		return
+	}
+
+	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+
+	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		return
+	}
+
+	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
 		return
 	}
 
@@ -863,19 +867,6 @@ func dealWithBuyData(
 		return
 	}
 
-	var nonce uint64
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var err error
-		nonce, err = client.PendingNonceAt(context.Background(), myAddress)
-		if err != nil {
-			logrus.Errorf("NonceAt  err : %v", err)
-			return
-		}
-	}()
-
 	//TODO：send tx
 
 	decimalPos2 := result.FloatString(5)
@@ -893,7 +884,6 @@ func dealWithBuyData(
 	}
 
 	// logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
-	wg.Wait()
 
 	txHash, err := SendTx(
 		client,
@@ -905,11 +895,29 @@ func dealWithBuyData(
 		chainId,
 		amountIn,
 		amountOut,
-		new(big.Int).SetUint64(nonce),
+		new(big.Int).SetUint64(nonceGlobal),
 		pool)
 
 	if err != nil {
 		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
+		return
+	}
+
+	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
+	if err != nil {
+		logrus.Errorf("NonceAt  err : %v", err)
+		return
+	}
+
+	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
+		return
+	}
+
+	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+	if err != nil {
+		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
 		return
 	}
 
