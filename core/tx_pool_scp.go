@@ -217,7 +217,7 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			break
 		}
 		if i == len(contractList)-1 {
-			logrus.Infof("tx is invalid tx id %s, type is %v", tx.Hash(), optType)
+			// logrus.Infof("tx is invalid tx id %s, type is %v", tx.Hash(), optType)
 			return
 		}
 
@@ -227,22 +227,22 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 
 	// txData := string(tx.Data())
 
-	logrus.Infof(" tx hash is %v time is %v", tx.Hash(), time.Now().UnixMicro())
-
 	for i, v := range methodIdList {
 		if txData[0:8] == v {
 			break
 		}
 		if i == len(methodIdList)-1 {
-			logrus.Infof("method id not find tx id %s", tx.Hash())
+			// logrus.Infof("method id not find tx id %s", tx.Hash())
 			return
 		}
 	}
 
 	if txMap.isExiet(sender, tx.Hash().String()) {
-		logrus.Infof("is hash repeat hash %v", tx.Hash().String())
+		// logrus.Infof("is hash repeat hash %v", tx.Hash().String())
 		return
 	}
+
+	logrus.Infof(" tx hash is %v time is %v", tx.Hash(), time.Now().UnixMicro())
 
 	coinData, err := coreSPool.GetReserves()
 	if err != nil {
@@ -351,9 +351,9 @@ func SendTx(
 func FilterAddress(addr common.Address) bool {
 	for _, v := range mapAddr {
 		if strings.EqualFold(v.String(), addr.String()) {
-			if strings.EqualFold(v.String(), "0xCd51c15e940a9feB43551C4b8C5c5c0498310137") {
-				logrus.Infof("address is send time is %v", time.Now().UnixMicro())
-			}
+			// if strings.EqualFold(v.String(), "0xCd51c15e940a9feB43551C4b8C5c5c0498310137") {
+			// logrus.Infof("address is send time is %v", time.Now().UnixMicro())
+			// }
 			return false
 		}
 	}
@@ -378,7 +378,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		}
 
 		if amountMin.Cmp(amountIn) == 1 {
-			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			// logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 			return nil, nil
 		}
 
@@ -390,7 +390,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		amountOut = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 180000))), big.NewInt(1e18))
 
 		if amountMin.Cmp(amountOut) == 1 {
-			logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+			// logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 			return nil, nil
 		}
 		amountIn = new(big.Int).Div(new(big.Int).Mul(amountOut, big.NewInt(75000)), big.NewInt(100000))
@@ -403,7 +403,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		if balance.Cmp(amountIn) < 1 {
 			amountIn = balance
 			if amountMin.Cmp(amountIn) == 1 {
-				logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
+				// logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 				return nil, nil
 			}
 			amountOut = new(big.Int).Div(new(big.Int).Mul(amountIn, big.NewInt(100000)), big.NewInt(75000))
@@ -485,7 +485,7 @@ func Do0x06fd4ac5(
 		return
 	}
 
-	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+	// logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 
 	wg.Wait()
 
@@ -751,7 +751,7 @@ func Do0xbaa2abde(
 		return
 	}
 
-	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+	// logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 	wg.Wait()
 
 	txHash, err := SendTx(
@@ -822,7 +822,7 @@ func dealWithSellData(
 		return
 	}
 
-	logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
+	// logrus.Infof("wemix input is %v  ,crow  output is %v", amountIn.String(), amountOut.String())
 	wg.Wait()
 
 	txHash, err := SendTx(
@@ -892,7 +892,7 @@ func dealWithBuyData(
 		return
 	}
 
-	logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
+	// logrus.Infof("crow input is %v  , wemix output is %v", amountIn.String(), amountOut.String())
 	wg.Wait()
 
 	txHash, err := SendTx(
