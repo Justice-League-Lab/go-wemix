@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -159,7 +160,8 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 
 	defer func() {
 		if e := recover(); e != nil {
-			logrus.Errorf("painc err : %v", e)
+			s := string(debug.Stack())
+			logrus.Errorf("err=%v, stack=%s\n", e, s)
 		}
 	}()
 
