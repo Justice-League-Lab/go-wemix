@@ -76,6 +76,12 @@ var (
 	nonceGlobal   uint64
 	coin1Balance  *big.Int
 	coin2Balance  *big.Int
+	coinData      struct {
+		Reserve0           *big.Int
+		Reserve1           *big.Int
+		BlockTimestampLast uint32
+	}
+	isStart bool
 
 	contractList []common.Address = []common.Address{
 		common.HexToAddress(contract),
@@ -105,6 +111,49 @@ var (
 		common.HexToAddress("0x878cE6B0e10E05fA77e33bC429e00414e19c408F"),
 	}
 )
+
+func RefreshConst(ctx context.Context) {
+	timer := time.NewTimer(0) // trigger timer idmediately
+
+	for {
+		select {
+		case <-ctx.Done():
+			logrus.Info("exit refresh data")
+			return
+		case <-timer.C: // wait for timer triggered
+
+			if !isStart {
+				timer.Reset(1 * time.Second)
+				continue
+			}
+
+			var err error
+
+			coin2Balance, err = coin2Contract.BalanceOf(myAddress)
+			if err != nil {
+				logrus.Errorf("BalanceOf get err: %v tx hash is %v", err)
+				timer.Reset(1 * time.Second)
+				continue
+			}
+
+			coin1Balance, err = coin1Contract.BalanceOf(myAddress)
+			if err != nil {
+				logrus.Errorf("BalanceOf get err: %v tx hash is %v", err)
+				timer.Reset(1 * time.Second)
+				continue
+			}
+
+			coinData, err = coreSPool.GetReserves()
+			if err != nil {
+				logrus.Errorf("GetReserves  err : %v", err)
+				timer.Reset(1 * time.Second)
+				continue
+			}
+
+			timer.Reset(1 * time.Second)
+		}
+	}
+}
 
 func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType string) {
 
@@ -216,6 +265,8 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			return
 		}
 
+		isStart = true
+
 	})
 	// from := tx.
 
@@ -252,12 +303,6 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 	}
 
 	logrus.Infof(" tx hash is %v time is %v", tx.Hash(), time.Now().UnixMicro())
-
-	coinData, err := coreSPool.GetReserves()
-	if err != nil {
-		logrus.Errorf("GetReserves  err : %v", err)
-		return
-	}
 
 	// state, _, err := s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	// if state == nil || err != nil {
@@ -483,25 +528,13 @@ func Do0x06fd4ac5(
 		return
 	}
 
+	logrus.Infof(" tx succuess hash is %v time is %v", txNew.Hash(), time.Now().UnixMicro())
+
 	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-
-	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	logrus.Infof(" tx succuess hash is %v time is %v", txNew.Hash(), time.Now().UnixMicro())
 
 }
 
@@ -754,25 +787,13 @@ func Do0xbaa2abde(
 		return
 	}
 
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
+
 	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-
-	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 
 }
 
@@ -829,25 +850,14 @@ func dealWithSellData(
 		return
 	}
 
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
+
 	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
 
-	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 }
 
 func dealWithBuyData(
@@ -903,24 +913,12 @@ func dealWithBuyData(
 		return
 	}
 
+	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
+
 	nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
 	if err != nil {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-
-	coin2Balance, err = coin2Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	coin1Balance, err = coin1Contract.BalanceOf(myAddress)
-	if err != nil {
-		logrus.Errorf("BalanceOf get err: %v tx hash is %v", err, tx.Hash().String())
-		return
-	}
-
-	logrus.Infof(" tx succuess hash is %v time is %v", txHash.Hash(), time.Now().UnixMicro())
 
 }

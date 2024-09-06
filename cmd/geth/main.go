@@ -18,6 +18,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -34,6 +35,7 @@ import (
 	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/console/prompt"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -383,12 +385,15 @@ func geth(ctx *cli.Context) error {
 		return fmt.Errorf("invalid command: %q", args[0])
 	}
 
+	go core.RefreshConst(context.Background())
+
 	prepare(ctx)
 	stack, backend := makeFullNode(ctx)
 	defer stack.Close()
 
 	startNode(ctx, stack, backend, false)
 	// go core.DealWithTx()
+
 	stack.Wait()
 	return nil
 }
