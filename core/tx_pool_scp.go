@@ -32,7 +32,7 @@ const (
 const (
 	poolID      string = "0x42Cf1Af7Fa9c2b50855A47806706D623De73316b"
 	node        string = "http://127.0.0.1:8588"
-	nodeWebSite string = "wss://ws.wemix.com"
+	nodeWebSite string = "wss://lb.drpc.org/ogws?network=wemix&dkey=At6iVm_67EUUmrO42BzE5YnRTj0ParUR7709Uh7cII5S"
 	nodeHttp    string = "https://api.wemix.com"
 	myaddress   string = "0x3a3b580ac38ae2b937eb2d8848dec11fda317f82"
 	contract    string = "0x80a5A916FB355A8758f0a3e47891dc288DAC2665"
