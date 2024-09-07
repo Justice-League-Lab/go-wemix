@@ -400,7 +400,7 @@ func FilterAddress(addr common.Address) bool {
 
 func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptType) (*big.Int, *big.Int) {
 
-	var balance, amountIn, amountOut *big.Int
+	var amountIn, amountOut *big.Int
 	if optType == SellType {
 		amountIn = new(big.Int).Mul(new(big.Int).SetInt64(int64(((dividend/divisor - 1) * 240000))), big.NewInt(1e18))
 
@@ -411,7 +411,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		// 	return nil, nil
 		// }
 		if coin2Balance.Cmp(amountIn) < 1 {
-			amountIn = balance
+			amountIn = coin2Balance
 		}
 
 		if amountMin.Cmp(amountIn) == 1 {
@@ -438,7 +438,7 @@ func dealwithAmout(dividend, divisor float64, tx types.Transaction, optType OptT
 		// 	return nil, nil
 		// }
 		if coin1Balance.Cmp(amountIn) < 1 {
-			amountIn = balance
+			amountIn = coin1Balance
 			if amountMin.Cmp(amountIn) == 1 {
 				// logrus.Infof("amout not less than 200  tx hash is %v", tx.Hash().String())
 				return nil, nil
