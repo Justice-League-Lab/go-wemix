@@ -267,6 +267,14 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 			return
 		}
 
+		coinData, err := coreSPool.GetReserves()
+		if err != nil {
+			logrus.Errorf("GetReserves  err : %v", err)
+			return
+		}
+		reserve0Balance = coinData.Reserve0
+		reserve1Balance = coinData.Reserve1
+
 		isStart = true
 
 	})
