@@ -71,8 +71,8 @@ func TestSendTx(t *testing.T) {
 		logrus.Errorf("NonceAt  err : %v", err)
 		return
 	}
-	intput, _ := new(big.Int).SetString("2000000000000000000000", 10)
-	output, _ := new(big.Int).SetString("2666600000000000000000", 10)
+	intput, _ := new(big.Int).SetString("20000000000000000000000", 10)
+	output, _ := new(big.Int).SetString("26666000000000000000000", 10)
 	hash, err := SendTx(
 		client,
 		coreSERC20,
