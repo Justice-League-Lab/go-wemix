@@ -1362,7 +1362,9 @@ func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *type
 			txs = append(txs, set.Flatten()...)
 		}
 
-		pool.txFeed.Send(NewTxsEvent{txs})
+		count := pool.txFeed.Send(NewTxsEvent{txs})
+
+		logrus.Infof("Number of notification nodes is %d", count)
 
 	}
 
