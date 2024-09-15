@@ -79,7 +79,6 @@ var (
 	coin2Balance    *big.Int
 	reserve0Balance *big.Int
 	reserve1Balance *big.Int
-	client2         *ethclient.Client
 
 	isStart bool
 
@@ -248,12 +247,6 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 		coreSERC20 = &erc.CoreSession{
 			Contract: coreERC20,
 			CallOpts: callOpts,
-		}
-
-		client2, err = ethclient.Dial(nodeWebSite) // 本地节点的默认RPC端口
-		if err != nil {
-			logrus.Errorf("Dial client2 err : %v", err)
-			return
 		}
 
 		nonceGlobal, err = client.PendingNonceAt(context.Background(), myAddress)
