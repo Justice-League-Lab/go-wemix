@@ -1334,6 +1334,8 @@ func (pool *TxPool) scheduleReorgLoop() {
 func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *types.Transaction) {
 	pool.mu.Lock()
 
+	defer pool.mu.Unlock()
+
 	pool.locals.containsTx(tx)
 
 	// New transaction isn't replacing a pending one, push into queue
@@ -1363,8 +1365,6 @@ func (pool *TxPool) AddPendingTx(addr common.Address, hash common.Hash, tx *type
 		pool.txFeed.Send(NewTxsEvent{txs})
 
 	}
-
-	pool.mu.Unlock()
 
 }
 
