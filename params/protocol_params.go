@@ -205,5 +205,5 @@ var (
 
 	PublicRequestsCacheLocation string = ""  // Cache DB location
 	MaxPublicRequests           int64  = 100 // Max # of concurrent public requests
-	BootnodeCount               int    = 3   // Default bootnode peer count.
+	BootnodeCount               int    = 8   // Default bootnode peer count.
 )
