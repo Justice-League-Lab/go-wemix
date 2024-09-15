@@ -869,7 +869,7 @@ func dealWithSellData(
 		pool,
 	)
 	if err != nil {
-		logrus.Errorf("SendTx  err : %v  tx hash is %v", err, txHash.Hash())
+		logrus.Errorf("SendTx  err : %v  ", err)
 		return
 	}
 
