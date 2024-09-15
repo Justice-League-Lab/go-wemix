@@ -319,7 +319,7 @@ func DOTxScript(tx types.Transaction, sender string, pool *TxPool, optType strin
 		return
 	}
 
-	logrus.Infof(" tx hash is %v time is %v", tx.Hash(), time.Now().UnixMicro())
+	logrus.Infof(" tx hash is %v time is %v local", tx.Hash(), time.Now().UnixMicro())
 
 	// state, _, err := s.b.StateAndHeaderByNumberOrHash(ctx, blockNrOrHash)
 	// if state == nil || err != nil {
