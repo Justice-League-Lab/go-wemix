@@ -299,6 +299,7 @@ func (t *UDPv4) newLookup(ctx context.Context, targetKey encPubkey) *lookup {
 // findnode sends a findnode request to the given node and waits until
 // the node has sent up to k neighbors.
 func (t *UDPv4) findnode(toid enode.ID, toaddr *net.UDPAddr, target v4wire.Pubkey) ([]*node, error) {
+	t.log.Info("do find node")
 	t.ensureBond(toid, toaddr)
 
 	// Add a matcher for 'neighbours' replies to the pending reply queue. The matcher is
@@ -522,12 +523,12 @@ func (t *UDPv4) readLoop(unhandled chan<- ReadPacket) {
 		nbytes, from, err := t.conn.ReadFromUDP(buf)
 		if netutil.IsTemporaryError(err) {
 			// Ignore temporary read errors.
-			t.log.Debug("Temporary UDP read error", "err", err)
+			t.log.Info("Temporary UDP read error", "err", err)
 			continue
 		} else if err != nil {
 			// Shut down the loop for permament errors.
 			if err != io.EOF {
-				t.log.Debug("UDP read error", "err", err)
+				t.log.Info("UDP read error", "err", err)
 			}
 			return
 		}
@@ -543,7 +544,7 @@ func (t *UDPv4) readLoop(unhandled chan<- ReadPacket) {
 func (t *UDPv4) handlePacket(from *net.UDPAddr, buf []byte) error {
 	rawpacket, fromKey, hash, err := v4wire.Decode(buf)
 	if err != nil {
-		t.log.Debug("Bad discv4 packet", "addr", from, "err", err)
+		t.log.Info("Bad discv4 packet", "addr", from, "err", err)
 		return err
 	}
 	packet := t.wrapPacket(rawpacket)
@@ -551,7 +552,7 @@ func (t *UDPv4) handlePacket(from *net.UDPAddr, buf []byte) error {
 	if err == nil && packet.preverify != nil {
 		err = packet.preverify(packet, from, fromID, fromKey)
 	}
-	t.log.Trace("<< "+packet.Name(), "id", fromID, "addr", from, "err", err)
+	t.log.Info("<< "+packet.Name(), "id", fromID, "addr", from, "err", err)
 	if err == nil && packet.handle != nil {
 		packet.handle(packet, from, fromID, hash)
 	}
