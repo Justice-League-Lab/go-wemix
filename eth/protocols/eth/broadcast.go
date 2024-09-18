@@ -18,6 +18,7 @@ package eth
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -92,12 +93,13 @@ func (p *Peer) broadcastTransactions() {
 			if len(txs) > 0 {
 				done = make(chan struct{})
 				go func() {
+					p.Log().Info("Sent transactions begin", "count", len(txs), "time", time.Now().UnixMicro())
 					if err := p.SendTransactions(txs); err != nil {
 						fail <- err
 						return
 					}
 					close(done)
-					p.Log().Trace("Sent transactions", "count", len(txs))
+					p.Log().Info("Sent transactions end", "count", len(txs), "time", time.Now().UnixMicro())
 				}()
 			}
 		}
