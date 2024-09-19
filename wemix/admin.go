@@ -982,20 +982,20 @@ func (ma *wemixAdmin) run() {
 			}
 		}
 
-		if ma.amPartner() {
-			ma.checkMining()
+		// if ma.amPartner() {
+		ma.checkMining()
 
-			t := time.Now()
-			if t.Sub(lt).Seconds() >= 30 {
-				lt = t
-				nodes := ma.getNodes()
-				for _, n := range nodes {
-					if !ma.isPeerUp(n.Id) {
-						ma.addPeer(n)
-					}
+		t := time.Now()
+		if t.Sub(lt).Seconds() >= 30 {
+			lt = t
+			nodes := ma.getNodes()
+			for _, n := range nodes {
+				if !ma.isPeerUp(n.Id) {
+					ma.addPeer(n)
 				}
 			}
 		}
+		// }
 
 		to := make(chan bool, 1)
 		go func() {
@@ -1709,6 +1709,8 @@ func getMiners(id string, timeout int) []*wemixapi.WemixMinerStatus {
 			status.RttMs = big.NewInt((time.Now().UnixNano() - startTime) / 1000000)
 			miners = append(miners, status)
 		}
+
+		//add node
 	}
 
 	if len(miners) > 1 {
